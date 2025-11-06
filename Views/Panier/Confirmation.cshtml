@@ -1,0 +1,164 @@
+@model TP2.Models.Order
+
+@{
+    ViewData["Title"] = "Order Confirmation - Tunis Motors";
+}
+
+<!-- BREADCRUMB -->
+<div id="breadcrumb" class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="breadcrumb-header">Order Confirmation</h3>
+                <ul class="breadcrumb-tree">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Cart</a></li>
+                    <li><a href="#">Checkout</a></li>
+                    <li class="active">Confirmation</li>
+                </ul>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /BREADCRUMB -->
+
+<!-- SECTION -->
+<div class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <!-- Order Confirmation -->
+                <div class="text-center mb-5">
+                    <div class="mb-4">
+                        <i class="fa fa-check-circle fa-5x text-success"></i>
+                    </div>
+                    <h2 class="text-success mb-3">Order Confirmed!</h2>
+                    <p class="lead text-muted">
+                        Thank you for your purchase, <strong>@Model.CustomerName</strong>!<br>
+                        Your order has been successfully placed and is being processed.
+                    </p>
+                </div>
+
+                <!-- Order Details Card -->
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0"><i class="fa fa-receipt me-2"></i>Order Summary</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="mb-3">
+                                    <strong class="text-muted">Order Number:</strong><br>
+                                    <span class="h5">#@Model.Id</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="mb-3">
+                                    <strong class="text-muted">Order Date:</strong><br>
+                                    <span class="h6">@Model.OrderDate.ToString("dddd, MMMM dd, yyyy")</span><br>
+                                    <small class="text-muted">@Model.OrderDate.ToString("HH:mm")</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="mb-3">
+                                    <strong class="text-muted">Total Amount:</strong><br>
+                                    <span class="h4 text-success">@Model.TotalAmount.ToString("N0") TND</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="mb-3">
+                                    <strong class="text-muted">Delivery Address:</strong><br>
+                                    <span class="h6">@Model.Address</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (Model.Items != null && Model.Items.Any())
+                        {
+                            <hr>
+                            <h5 class="mb-3">Ordered Items:</h5>
+                            <div class="table-responsive">
+                                <table class="table table-borderless">
+                                    <thead>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th class="text-center">Qty</th>
+                                            <th class="text-end">Price</th>
+                                            <th class="text-end">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.Items)
+                                        {
+                                            <tr>
+                                                <td>@item.ProductName</td>
+                                                <td class="text-center">@item.Quantity</td>
+                                                <td class="text-end">@item.Price.ToString("N0") TND</td>
+                                                <td class="text-end">@((item.Quantity * item.Price).ToString("N0")) TND</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Next Steps -->
+                <div class="card shadow mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fa fa-info-circle me-2"></i>What happens next?</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-3">
+                                <i class="fa fa-envelope fa-2x text-primary mb-2"></i>
+                                <h6>Order Confirmation</h6>
+                                <p class="small text-muted">You'll receive an email confirmation shortly</p>
+                            </div>
+                            <div class="col-md-4 text-center mb-3">
+                                <i class="fa fa-truck fa-2x text-warning mb-2"></i>
+                                <h6>Processing</h6>
+                                <p class="small text-muted">We'll prepare your order for delivery</p>
+                            </div>
+                            <div class="col-md-4 text-center mb-3">
+                                <i class="fa fa-shipping-fast fa-2x text-success mb-2"></i>
+                                <h6>Delivery</h6>
+                                <p class="small text-muted">Your order will be delivered to your address</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="text-center">
+                    <div class="btn-group" role="group">
+                        <a asp-controller="Product" asp-action="Index" class="btn btn-outline-primary">
+                            <i class="fa fa-car me-2"></i>Continue Shopping
+                        </a>
+                        <a asp-controller="Profile" asp-action="MyOrders" class="btn btn-outline-info">
+                            <i class="fa fa-list me-2"></i>View My Orders
+                        </a>
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-success">
+                            <i class="fa fa-home me-2"></i>Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /SECTION -->

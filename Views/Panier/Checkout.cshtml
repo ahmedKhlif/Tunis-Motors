@@ -1,0 +1,131 @@
+@model TP2.ViewModels.OrderViewModel
+
+@{
+    ViewData["Title"] = "Checkout - Tunis Motors";
+}
+
+<!-- BREADCRUMB -->
+<div id="breadcrumb" class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="breadcrumb-header">Checkout</h3>
+                <ul class="breadcrumb-tree">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Cart</a></li>
+                    <li class="active">Checkout</li>
+                </ul>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /BREADCRUMB -->
+
+<!-- SECTION -->
+<div class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <!-- Order Details -->
+            <div class="col-md-8">
+                <div class="billing-details">
+                    <div class="section-title">
+                        <h3 class="title">Billing Details</h3>
+                    </div>
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Checkout" method="post" id="checkout-form" class="form-horizontal">
+                        @Html.AntiForgeryToken()
+
+                        <div class="form-group">
+                            <label asp-for="Address" class="control-label">Delivery Address</label>
+                            <input asp-for="Address" class="input" placeholder="Enter your full delivery address" required />
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="PaymentMethod" class="control-label">Payment Method</label>
+                            <select class="input" id="PaymentMethod" name="PaymentMethod">
+                                <option value="CreditCard">Credit Card</option>
+                                <option value="Paypal">PayPal</option>
+                                <option value="BankTransfer">Bank Transfer</option>
+                                <option value="CashOnDelivery">Cash on Delivery</option>
+                            </select>
+                        </div>
+
+                        <!-- Hidden fields for cart items -->
+                        @for (int i = 0; i < Model.CartItems.Count; i++)
+                        {
+                            <input type="hidden" name="CartItems[@i].ProductName" value="@Model.CartItems[i].ProductName" />
+                            <input type="hidden" name="CartItems[@i].Quantity" value="@Model.CartItems[i].Quantity" />
+                            <input type="hidden" name="CartItems[@i].Price" value="@Model.CartItems[i].Price" />
+                        }
+                        <input type="hidden" name="TotalAmount" value="@Model.TotalAmount" />
+                    </form>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-md-4">
+                <div class="order-summary">
+                    <div class="section-title">
+                        <h3 class="title">Order Summary</h3>
+                    </div>
+
+                    <div class="order-products">
+                        @foreach (var item in Model.CartItems)
+                        {
+                            <div class="order-col">
+                                <div>@item.Quantity x @item.ProductName</div>
+                                <div>@(item.Price * item.Quantity).ToString("N0") TND</div>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="order-col">
+                        <div>Shipping</div>
+                        <div><strong>FREE</strong></div>
+                    </div>
+
+                    <hr>
+
+                    <div class="order-col">
+                        <div><strong>TOTAL</strong></div>
+                        <div><strong class="order-total">@Model.TotalAmount.ToString("N0") TND</strong></div>
+                    </div>
+
+                    <div class="order-note">
+                        <p>Please review your order details before proceeding with payment.</p>
+                    </div>
+
+                    <button type="submit" form="checkout-form" class="primary-btn order-submit">
+                        Place Order
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /SECTION -->

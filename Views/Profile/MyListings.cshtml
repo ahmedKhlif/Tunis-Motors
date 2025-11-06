@@ -1,0 +1,94 @@
+@model IEnumerable<TP2.Models.CarListing>
+
+@{
+    ViewData["Title"] = "My Car Listings";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fa fa-car me-2"></i>My Car Listings</h2>
+                <a asp-controller="Product" asp-action="Create" class="btn btn-success">
+                    <i class="fa fa-plus me-2"></i>Add New Car
+                </a>
+            </div>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (Model.Any())
+            {
+                <div class="row">
+                    @foreach (var car in Model)
+                    {
+                        <div class="col-xl-4 col-lg-6 mb-4">
+                            <div class="card h-100 shadow">
+                                <div class="position-relative">
+                                    <img src="~/images/@(car.Image ?? "noimage.jpg")" class="card-img-top" alt="@car.Name"
+                                         style="height: 200px; object-fit: cover;">
+                                    @if (!car.IsApproved)
+                                    {
+                                        <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2">
+                                            <i class="fa fa-clock"></i> Pending Approval
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success position-absolute top-0 start-0 m-2">
+                                            <i class="fa fa-check"></i> Approved
+                                        </span>
+                                    }
+                                </div>
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">@car.Name</h5>
+                                    <div class="mb-2">
+                                        <span class="h6 text-success">@car.Price.ToString("N0") TND</span>
+                                    </div>
+                                    <div class="text-muted small mb-2">
+                                        <div><i class="fa fa-calendar me-1"></i>@car.Year</div>
+                                        <div><i class="fa fa-tachometer-alt me-1"></i>@car.Mileage.ToString("N0") km</div>
+                                        <div><i class="fa fa-gas-pump me-1"></i>@car.FuelType</div>
+                                    </div>
+                                    <div class="mt-auto">
+                                        <div class="row g-1">
+                                            <div class="col-6">
+                                                <a asp-controller="Product" asp-action="Details" asp-route-id="@car.ProductId" class="btn btn-outline-primary btn-sm w-100">
+                                                    <i class="fa fa-eye"></i> View
+                                                </a>
+                                            </div>
+                                            <div class="col-6">
+                                                <a asp-controller="Product" asp-action="Edit" asp-route-id="@car.ProductId" class="btn btn-outline-warning btn-sm w-100">
+                                                    <i class="fa fa-edit"></i> Edit
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <span class="badge bg-secondary">@car.Category.CategoryName</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fa fa-car fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No car listings yet</h4>
+                    <p class="text-muted">Start selling by adding your first car listing.</p>
+                    <a asp-controller="Product" asp-action="Create" class="btn btn-primary btn-lg">
+                        <i class="fa fa-plus me-2"></i>Add Your First Car
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

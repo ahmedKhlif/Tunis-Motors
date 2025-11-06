@@ -1,0 +1,7 @@
+@using TP2.Models.Repositories
+@inject ICategoryRepository CategoryRepository
+
+@{
+    Layout = "_Layout";
+    ViewData["Categories"] = CategoryRepository.GetAll().ToList();
+}

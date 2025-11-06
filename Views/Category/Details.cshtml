@@ -1,0 +1,215 @@
+@model TP2.Models.Category
+
+@{
+    ViewData["Title"] = "Category Details - Tunis Motors";
+}
+
+<!-- BREADCRUMB -->
+<div id="breadcrumb" class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="breadcrumb-header">Category Details</h3>
+                <ul class="breadcrumb-tree">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/Dashboard">Dashboard</a></li>
+                    <li><a href="/Category">Categories</a></li>
+                    <li class="active">@Model.CategoryName</li>
+                </ul>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /BREADCRUMB -->
+
+<!-- SECTION -->
+<div class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <!-- Category Details -->
+            <div class="col-lg-8 mb-4">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0"><i class="fa fa-tag me-2"></i>Category Information</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-sm-3">
+                                <strong class="text-muted">Category ID:</strong>
+                            </div>
+                            <div class="col-sm-9">
+                                <span class="badge bg-primary fs-6">@Model.CategoryId</span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-sm-3">
+                                <strong class="text-muted">Category Name:</strong>
+                            </div>
+                            <div class="col-sm-9">
+                                <h4 class="text-primary mb-0">@Model.CategoryName</h4>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Image))
+                        {
+                            <div class="row mb-4">
+                                <div class="col-sm-3">
+                                    <strong class="text-muted">Category Image:</strong>
+                                </div>
+                                <div class="col-sm-9">
+                                    <img src="@Model.Image" alt="@Model.CategoryName" class="img-fluid rounded" style="max-width: 300px; max-height: 200px; object-fit: cover;" />
+                                </div>
+                            </div>
+                        }
+
+                        <div class="row mb-4">
+                            <div class="col-sm-3">
+                                <strong class="text-muted">Total Cars:</strong>
+                            </div>
+                            <div class="col-sm-9">
+                                <h5 class="text-success mb-0">@(Model.CarListings?.Count ?? 0) cars in this category</h5>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-sm-3">
+                                <strong class="text-muted">Category Image:</strong>
+                            </div>
+                            <div class="col-sm-9">
+                                @if (!string.IsNullOrEmpty(Model.Image))
+                                {
+                                    <span class="badge bg-success">
+                                        <i class="fa fa-check me-1"></i>Image Available
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fa fa-times me-1"></i>No Image
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cars in Category -->
+                @if (Model.CarListings != null && Model.CarListings.Any())
+                {
+                    <div class="card shadow mt-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fa fa-car me-2"></i>Cars in @Model.CategoryName Category</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                @foreach (var car in Model.CarListings.Take(6))
+                                {
+                                    <div class="col-md-6 mb-3">
+                                        <div class="d-flex align-items-center p-3 border rounded">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">@car.Name</h6>
+                                                <small class="text-muted">@car.Year • @car.Brand</small>
+                                                <div class="mt-2">
+                                                    <span class="badge bg-primary">@car.Condition</span>
+                                                    @if (!car.IsApproved)
+                                                    {
+                                                        <span class="badge bg-warning text-dark ms-1">Pending</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="text-end">
+                                                <h6 class="text-success mb-0">@car.Price.ToString("N0") TND</h6>
+                                                <a asp-controller="Product" asp-action="Details" asp-route-id="@car.ProductId" class="btn btn-sm btn-outline-primary mt-2">
+                                                    <i class="fa fa-eye"></i> View
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            @if (Model.CarListings.Count > 6)
+                            {
+                                <div class="text-center mt-3">
+                                    <a asp-controller="Product" asp-action="Index" asp-route-categoryId="@Model.CategoryId" class="btn btn-primary">
+                                        <i class="fa fa-list me-2"></i>View All @Model.CarListings.Count Cars
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card shadow mt-4">
+                        <div class="card-body text-center py-5">
+                            <i class="fa fa-car fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Cars in This Category</h5>
+                            <p class="text-muted">This category doesn't have any cars assigned to it yet.</p>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Quick Actions -->
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h6 class="mb-0"><i class="fa fa-bolt me-2"></i>Quick Actions</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a asp-action="Edit" asp-route-id="@Model.CategoryId" class="btn btn-warning">
+                                <i class="fa fa-edit me-2"></i>Edit Category
+                            </a>
+                            <a asp-controller="Product" asp-action="Create" class="btn btn-success">
+                                <i class="fa fa-plus me-2"></i>Add New Car
+                            </a>
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fa fa-arrow-left me-2"></i>Back to Categories
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Stats -->
+                <div class="card shadow">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="fa fa-chart-bar me-2"></i>Category Statistics</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="p-3">
+                                    <h4 class="text-primary mb-1">@Model.CategoryId</h4>
+                                    <small class="text-muted">ID</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3">
+                                    <h4 class="text-success mb-1">@(Model.CarListings?.Count ?? 0)</h4>
+                                    <small class="text-muted">Cars</small>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="text-center">
+                            <small class="text-muted">Category created and managed by administrators</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /SECTION -->

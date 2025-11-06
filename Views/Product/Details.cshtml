@@ -1,0 +1,584 @@
+@model TP2.Models.CarListing
+
+@{
+    ViewData["Title"] = Model.Name + " - Car Details";
+    var photoPath = Url.Content("~/images/" + (Model.Image ?? "noimage.jpg"));
+}
+
+<!-- BREADCRUMB -->
+<div class="bg-light py-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item"><a href="/Product" class="text-decoration-none">Cars</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- HERO SECTION -->
+<div class="bg-gradient-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-2">@Model.Name</h1>
+                <p class="lead mb-3">@Model.Brand @Model.Year • @Model.Condition</p>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="h2 text-warning fw-bold mb-0">@Model.Price.ToString("N0") TND</span>
+                    <div class="d-flex align-items-center">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            if (i <= Model.Rating)
+                            {
+                                <i class="fa fa-star text-warning"></i>
+                            }
+                            else
+                            {
+                                <i class="fa fa-star-o text-warning"></i>
+                            }
+                        }
+                        <small class="text-muted ms-2">(@Model.Rating.ToString("F1"))</small>
+                    </div>
+                    @if (!Model.IsApproved)
+                    {
+                        <span class="badge bg-warning text-dark">Pending Approval</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Approved</span>
+                    }
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                <div class="d-flex gap-2 justify-content-lg-end">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <button onclick="addToCart(@Model.ProductId)" class="btn btn-light btn-lg px-4">
+                            <i class="fa fa-shopping-cart me-2"></i>Add to Cart
+                        </button>
+                        <button onclick="addToWishlist(@Model.ProductId)" class="btn btn-outline-light btn-lg px-4">
+                            <i class="fa-regular fa-heart me-2"></i>Add to Wishlist
+                        </button>
+                    }
+                    else
+                    {
+                        <a href="/Account/Login" class="btn btn-light btn-lg px-4">
+                            <i class="fa fa-sign-in me-2"></i>Login to Purchase
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container py-5">
+    <div class="row">
+        <!-- Car Image -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-lg overflow-hidden">
+                <div class="position-relative">
+                    <img src="@photoPath" class="card-img-top" alt="@Model.Name"
+                         style="height: 500px; object-fit: cover;" onerror="this.src='@Url.Content("~/images/noimage.jpg")'">
+                    @if (Model.Condition == "New")
+                    {
+                        <div class="position-absolute top-0 end-0 m-3">
+                            <span class="badge bg-success fs-6 px-3 py-2">NEW</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="position-absolute top-0 end-0 m-3">
+                            <span class="badge bg-warning text-dark fs-6 px-3 py-2">USED</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Specifications -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-lg mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fa fa-info-circle me-2"></i>Key Specifications</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3 h-100">
+                                <i class="fa fa-tachometer-alt fa-2x text-primary mb-2"></i>
+                                <div class="small text-muted fw-semibold">Mileage</div>
+                                <div class="fw-bold text-dark">@Model.Mileage.ToString("N0") km</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3 h-100">
+                                <i class="fa fa-gas-pump fa-2x text-primary mb-2"></i>
+                                <div class="small text-muted fw-semibold">Fuel Type</div>
+                                <div class="fw-bold text-dark">@Model.FuelType</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3 h-100">
+                                <i class="fa fa-cogs fa-2x text-primary mb-2"></i>
+                                <div class="small text-muted fw-semibold">Transmission</div>
+                                <div class="fw-bold text-dark">@Model.Transmission</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3 h-100">
+                                <i class="fa fa-palette fa-2x text-primary mb-2"></i>
+                                <div class="small text-muted fw-semibold">Color</div>
+                                <div class="fw-bold text-dark">@Model.Color</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card border-0 shadow-lg">
+                <div class="card-body">
+                    <h6 class="card-title mb-3"><i class="fa fa-bolt me-2 text-warning"></i>Quick Actions</h6>
+                    <div class="d-grid gap-2">
+                        <a asp-controller="Message" asp-action="Compose" asp-route-listingId="@Model.ProductId"
+                           class="btn btn-outline-primary">
+                            <i class="fa fa-envelope me-2"></i>Contact Seller
+                        </a>
+                        <a asp-controller="Product" asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="fa fa-arrow-left me-2"></i>Back to Listings
+                        </a>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                            if (User.IsInRole("Admin") || User.IsInRole("Manager") || Model.SellerId == userId)
+                            {
+                                <a asp-action="Edit" asp-route-id="@Model.ProductId" class="btn btn-outline-warning">
+                                    <i class="fa fa-edit me-2"></i>Edit Listing
+                                </a>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+                    
+                    @section Scripts {
+                        <script>
+                            function addToCart(carId) {
+                                $.ajax({
+                                    url: '/Panier/AddProduct',
+                                    type: 'POST',
+                                    data: { id: carId },
+                                    success: function(response) {
+                                        showNotification('Car added to cart successfully!', 'success');
+                                        updateCartCount();
+                                    },
+                                    error: function(xhr, status, error) {
+                                        showNotification('Error adding car to cart: ' + error, 'error');
+                                    }
+                                });
+                            }
+                    
+                            function addToWishlist(carId) {
+                                $.ajax({
+                                    url: '/Wishlist/IsInWishlist',
+                                    type: 'GET',
+                                    data: { productId: carId },
+                                    success: function(isInWishlistResponse) {
+                                        if (isInWishlistResponse.isInWishlist) {
+                                            // Remove from wishlist
+                                            $.ajax({
+                                                url: '/Wishlist/RemoveFromWishlist',
+                                                type: 'POST',
+                                                data: { productId: carId },
+                                                success: function(response) {
+                                                    showNotification('Removed from wishlist!', 'success');
+                                                    updateWishlistButton(carId, false);
+                                                },
+                                                error: function(xhr, status, error) {
+                                                    showNotification('Error removing from wishlist: ' + error, 'error');
+                                                }
+                                            });
+                                        } else {
+                                            // Add to wishlist
+                                            $.ajax({
+                                                url: '/Wishlist/AddToWishlist',
+                                                type: 'POST',
+                                                data: { productId: carId },
+                                                success: function(response) {
+                                                    showNotification('Car added to wishlist!', 'success');
+                                                    updateWishlistButton(carId, true);
+                                                },
+                                                error: function(xhr, status, error) {
+                                                    showNotification('Error adding to wishlist: ' + error, 'error');
+                                                }
+                                            });
+                                        }
+                                    },
+                                    error: function(xhr, status, error) {
+                                        showNotification('Error checking wishlist: ' + error, 'error');
+                                    }
+                                });
+                            }
+                    
+                            function updateWishlistButton(productId, isInWishlist) {
+                                var button = $('button[onclick*="addToWishlist(' + productId + ')"]');
+                                var icon = button.find('i');
+                                if (isInWishlist) {
+                                    icon.removeClass('fa-regular fa-heart').addClass('fa-solid fa-heart text-danger');
+                                    button.html('<i class="fa fa-heart me-2"></i>Added to Wishlist');
+                                    button.removeClass('btn-outline-warning').addClass('btn-warning');
+                                } else {
+                                    icon.removeClass('fa-solid fa-heart text-danger').addClass('fa-regular fa-heart');
+                                    button.html('<i class="fa fa-heart me-2"></i>Add to Wishlist');
+                                    button.removeClass('btn-warning').addClass('btn-outline-warning');
+                                }
+                            }
+                    
+                            function showNotification(message, type) {
+                                // Create notification element
+                                var notification = $('<div class="alert alert-' + (type === 'success' ? 'success' : 'danger') + ' alert-dismissible fade show notification-toast" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">' +
+                                    message +
+                                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                                    '</div>');
+                    
+                                // Add to page
+                                $('body').append(notification);
+                    
+                                // Auto remove after 3 seconds
+                                setTimeout(function() {
+                                    notification.alert('close');
+                                }, 3000);
+                            }
+                    
+                            function updateCartCount() {
+                                $.ajax({
+                                    url: '/Panier/GetCartCount',
+                                    type: 'GET',
+                                    success: function(response) {
+                                        $('#cart-count').text(response.cartCount);
+                                    }
+                                });
+                            }
+                    
+                            // Initialize wishlist button state on page load
+                            $(document).ready(function() {
+                                updateCartCount();
+                                initializeWishlistButton(@Model.ProductId);
+                            });
+
+                            function initializeWishlistButton(productId) {
+                                $.ajax({
+                                    url: '/Wishlist/IsInWishlist',
+                                    type: 'GET',
+                                    data: { productId: productId },
+                                    success: function(response) {
+                                        updateWishlistButton(productId, response.isInWishlist);
+                                    },
+                                    error: function(xhr, status, error) {
+                                        console.log('Error checking wishlist status: ' + error);
+                                    }
+                                });
+                            }
+                        </script>
+                    }
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="d-grid gap-2">
+                            <button onclick="addToCart(@Model.ProductId)" class="btn btn-success btn-lg">
+                                <i class="fa fa-cart-plus me-2"></i>Add to Cart
+                            </button>
+                            <button onclick="addToWishlist(@Model.ProductId)" class="btn btn-outline-warning">
+                                <i class="fa-regular fa-heart me-2"></i>Add to Wishlist
+                            </button>
+                            <a asp-controller="Message" asp-action="Compose" asp-route-listingId="@Model.ProductId" class="btn btn-outline-primary">
+                                <i class="fa fa-envelope me-2"></i>Contact Seller
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-grid gap-2">
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-success btn-lg">
+                                <i class="fa fa-sign-in-alt me-2"></i>Login to Purchase
+                            </a>
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary">
+                                <i class="fa fa-user-plus me-2"></i>Register Now
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        
+            <!-- Detailed Information Section -->
+            <div class="row mt-5">
+                <div class="col-lg-8">
+                    <!-- Full Specifications -->
+                    <div class="card border-0 shadow-lg mb-4">
+                        <div class="card-header bg-dark text-white">
+                            <h4 class="mb-0"><i class="fa fa-info-circle me-2"></i>Complete Specifications</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="spec-group mb-4">
+                                        <h6 class="text-muted mb-3">Basic Information</h6>
+                                        <div class="spec-item d-flex justify-content-between py-2 border-bottom">
+                                            <span>Brand:</span>
+                                            <strong>@Model.Brand</strong>
+                                        </div>
+                                        <div class="spec-item d-flex justify-content-between py-2 border-bottom">
+                                            <span>Model:</span>
+                                            <strong>@Model.Name</strong>
+                                        </div>
+                                        <div class="spec-item d-flex justify-content-between py-2 border-bottom">
+                                            <span>Year:</span>
+                                            <strong>@Model.Year</strong>
+                                        </div>
+                                        <div class="spec-item d-flex justify-content-between py-2 border-bottom">
+                                            <span>Condition:</span>
+                                            <strong>@Model.Condition</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="spec-group mb-4">
+                                        <h6 class="text-muted mb-3">Technical Details</h6>
+                                        <div class="spec-item d-flex justify-content-between py-2 border-bottom">
+                                            <span>Mileage:</span>
+                                            <strong>@Model.Mileage.ToString("N0") km</strong>
+                                        </div>
+                                        <div class="spec-item d-flex justify-content-between py-2 border-bottom">
+                                            <span>Fuel Type:</span>
+                                            <strong>@Model.FuelType</strong>
+                                        </div>
+                                        <div class="spec-item d-flex justify-content-between py-2 border-bottom">
+                                            <span>Transmission:</span>
+                                            <strong>@Model.Transmission</strong>
+                                        </div>
+                                        <div class="spec-item d-flex justify-content-between py-2 border-bottom">
+                                            <span>Color:</span>
+                                            <strong>@Model.Color</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+        
+                            <!-- Additional Specs -->
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <div class="spec-group">
+                                        <h6 class="text-muted mb-3">Engine & Performance</h6>
+                                        <div class="spec-item d-flex justify-content-between py-2 border-bottom">
+                                            <span>Engine Size:</span>
+                                            <strong>@(Model.EngineSize?.ToString("F1") ?? "N/A") L</strong>
+                                        </div>
+                                        <div class="spec-item d-flex justify-content-between py-2 border-bottom">
+                                            <span>Horsepower:</span>
+                                            <strong>@(Model.Horsepower?.ToString() ?? "N/A") HP</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="spec-group">
+                                        <h6 class="text-muted mb-3">Capacity</h6>
+                                        <div class="spec-item d-flex justify-content-between py-2 border-bottom">
+                                            <span>Doors:</span>
+                                            <strong>@(Model.Doors?.ToString() ?? "N/A")</strong>
+                                        </div>
+                                        <div class="spec-item d-flex justify-content-between py-2 border-bottom">
+                                            <span>Seats:</span>
+                                            <strong>@(Model.Seats?.ToString() ?? "N/A")</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+        
+                            @if (!string.IsNullOrEmpty(Model.VIN))
+                            {
+                                <div class="mt-4 pt-3 border-top">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">VIN Number:</span>
+                                        <code class="bg-light px-2 py-1 rounded">@Model.VIN</code>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+        
+                    <!-- Description -->
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <div class="card border-0 shadow-lg mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fa fa-align-left me-2"></i>Description</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-0 lead">@Model.Description</p>
+                            </div>
+                        </div>
+                    }
+        
+                    <!-- Features -->
+                    @if (!string.IsNullOrEmpty(Model.Features))
+                    {
+                        <div class="card border-0 shadow-lg mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fa fa-star me-2"></i>Features & Equipment</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="features-list">
+                                    @foreach (var feature in Model.Features.Split(new[] { '\n', ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
+                                    {
+                                        <span class="badge bg-light text-dark me-2 mb-2 px-3 py-2">
+                                            <i class="fa fa-check text-success me-1"></i>@feature.Trim()
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+        
+                    <!-- Location -->
+                    @if (!string.IsNullOrEmpty(Model.Location))
+                    {
+                        <div class="card border-0 shadow-lg mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="fa fa-map-marker-alt me-2"></i>Location</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-map-marker fa-2x text-info me-3"></i>
+                                    <div>
+                                        <h6 class="mb-0">@Model.Location</h6>
+                                        <small class="text-muted">Vehicle location</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+        
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <!-- Category & Status -->
+                    <div class="card border-0 shadow-lg mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0"><i class="fa fa-tag me-2"></i>Listing Information</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <small class="text-muted d-block">Category</small>
+                                <span class="badge bg-primary fs-6">@Model.Category.CategoryName</span>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted d-block">Availability</small>
+                                <span class="badge @(Model.QuantityInStock > 0 ? "bg-success" : "bg-danger") fs-6">
+                                    @(Model.QuantityInStock > 0 ? $"{Model.QuantityInStock} in stock" : "Out of stock")
+                                </span>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted d-block">Condition</small>
+                                <span class="badge @(Model.Condition == "New" ? "bg-success" : "bg-warning text-dark") fs-6">
+                                    @Model.Condition
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Listing Timeline -->
+                    <div class="card border-0 shadow-lg mb-4">
+                        <div class="card-header bg-dark text-white">
+                            <h6 class="mb-0"><i class="fa fa-calendar me-2"></i>Timeline</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline">
+                                <div class="timeline-item mb-3">
+                                    <div class="d-flex">
+                                        <div class="timeline-marker bg-primary me-3"></div>
+                                        <div>
+                                            <small class="text-muted">Listed</small>
+                                            <div class="fw-bold">@Model.CreatedAt.ToString("MMM dd, yyyy")</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @if (Model.UpdatedAt.HasValue)
+                                {
+                                    <div class="timeline-item mb-3">
+                                        <div class="d-flex">
+                                            <div class="timeline-marker bg-warning me-3"></div>
+                                            <div>
+                                                <small class="text-muted">Updated</small>
+                                                <div class="fw-bold">@Model.UpdatedAt.Value.ToString("MMM dd, yyyy")</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                @if (Model.IsApproved && Model.ApprovedAt.HasValue)
+                                {
+                                    <div class="timeline-item">
+                                        <div class="d-flex">
+                                            <div class="timeline-marker bg-success me-3"></div>
+                                            <div>
+                                                <small class="text-muted">Approved</small>
+                                                <div class="fw-bold">@Model.ApprovedAt.Value.ToString("MMM dd, yyyy")</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Seller Information -->
+                    @if (Model.Seller != null)
+                    {
+                        <div class="card border-0 shadow-lg mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0"><i class="fa fa-user me-2"></i>Seller Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="avatar-circle bg-primary text-white me-3">
+                                        <i class="fa fa-user"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">@Model.Seller.UserName</h6>
+                                        <small class="text-muted">Verified Seller</small>
+                                    </div>
+                                </div>
+                                <a asp-controller="Message" asp-action="Compose" asp-route-listingId="@Model.ProductId"
+                                   class="btn btn-primary w-100">
+                                    <i class="fa fa-envelope me-2"></i>Contact Seller
+                                </a>
+                            </div>
+                        </div>
+                    }
+        
+                    <!-- Quick Links -->
+                    <div class="card border-0 shadow-lg">
+                        <div class="card-body">
+                            <h6 class="card-title mb-3"><i class="fa fa-link me-2 text-primary"></i>Quick Links</h6>
+                            <div class="d-grid gap-2">
+                                <a asp-controller="Product" asp-action="Index" class="btn btn-outline-secondary">
+                                    <i class="fa fa-arrow-left me-2"></i>Back to Listings
+                                </a>
+                                <a asp-controller="Wishlist" asp-action="Index" class="btn btn-outline-danger">
+                                    <i class="fa-regular fa-heart me-2"></i>My Wishlist
+                                </a>
+                                <a asp-controller="Panier" asp-action="Index" class="btn btn-outline-success">
+                                    <i class="fa fa-shopping-cart me-2"></i>My Cart
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>

@@ -1,0 +1,86 @@
+@model TP2.ViewModels.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Register - Tunis Motors";
+}
+
+<!-- BREADCRUMB -->
+<div id="breadcrumb" class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="breadcrumb-header">Register</h3>
+                <ul class="breadcrumb-tree">
+                    <li><a href="#">Home</a></li>
+                    <li class="active">Register</li>
+                </ul>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /BREADCRUMB -->
+
+<!-- SECTION -->
+<div class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <div class="billing-details">
+                    <div class="section-title">
+                        <h3 class="title">Create Your Account</h3>
+                        <p>Join our car marketplace to buy and sell vehicles</p>
+                    </div>
+
+                    <form method="post" class="form-horizontal">
+                        <div asp-validation-summary="All" class="text-danger alert alert-danger" style="display: @((ViewData.ModelState.IsValid) ? "none" : "block")"></div>
+
+                        <div class="form-group">
+                            <label asp-for="Email" class="control-label">Email Address</label>
+                            <input asp-for="Email" class="input" placeholder="Enter your email address" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Password" class="control-label">Password</label>
+                            <input asp-for="Password" type="password" class="input" placeholder="Create a strong password" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="ConfirmPassword" class="control-label">Confirm Password</label>
+                            <input asp-for="ConfirmPassword" type="password" class="input" placeholder="Confirm your password" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-checkbox">
+                                <input type="checkbox" id="terms" required>
+                                <label for="terms">
+                                    <span></span>
+                                    I agree to the <a href="#">Terms & Conditions</a>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="primary-btn order-submit">Create Account</button>
+                        </div>
+
+                        <div class="form-group">
+                            <p>Already have an account? <a asp-controller="Account" asp-action="Login">Login here</a></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /SECTION -->

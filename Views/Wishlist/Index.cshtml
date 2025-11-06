@@ -1,0 +1,186 @@
+@model IEnumerable<TP2.Models.Wishlist>
+
+@{
+    ViewData["Title"] = "My Wishlist - Tunis Motors";
+}
+
+<!-- BREADCRUMB -->
+<div id="breadcrumb" class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="breadcrumb-header">My Wishlist</h3>
+                <ul class="breadcrumb-tree">
+                    <li><a href="#">Home</a></li>
+                    <li class="active">Wishlist</li>
+                </ul>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /BREADCRUMB -->
+
+<!-- SECTION -->
+<div class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                @if (Model.Any())
+                {
+                    <div class="section-title">
+                        <h3 class="title">My Wishlist (@Model.Count() items)</h3>
+                        <p>Cars you've saved for later</p>
+                    </div>
+
+                    <div class="row">
+                        @foreach (var item in Model)
+                        {
+                            <div class="col-lg-4 col-md-6 mb-4">
+                                <div class="product">
+                                    <div class="product-img">
+                                        <img src="@Url.Content("~/images/" + (item.CarListing.Image ?? "noimage.jpg"))" alt="@item.CarListing.Name" onerror="this.src='@Url.Content("~/images/noimage.jpg")'">
+                                        <div class="product-label">
+                                            @if (item.CarListing.Condition == "New")
+                                            {
+                                                <span class="new">NEW</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="sale">USED</span>
+                                            }
+                                            @if (!item.CarListing.IsApproved)
+                                            {
+                                                <span class="sale">PENDING</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="product-body">
+                                        <p class="product-category">@item.CarListing.Category?.CategoryName</p>
+                                        <h3 class="product-name">
+                                            <a asp-controller="Product" asp-action="Details" asp-route-id="@item.CarListing.ProductId">
+                                                @item.CarListing.Name (@item.CarListing.Year)
+                                            </a>
+                                        </h3>
+                                        <h4 class="product-price">@item.CarListing.Price.ToString("N0") TND</h4>
+                                        <div class="product-rating">
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                        </div>
+                                        <div class="product-btns">
+                                            <button class="add-to-wishlist" onclick="removeFromWishlist(@item.ProductId)">
+                                                <i class="fa-solid fa-heart"></i><span class="tooltipp">remove from wishlist</span>
+                                            </button>
+                                            <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
+                                            <button class="quick-view" onclick="quickView(@item.CarListing.ProductId)">
+                                                <i class="fa fa-eye"></i><span class="tooltipp">quick view</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="add-to-cart">
+                                        <button class="add-to-cart-btn" onclick="addToCart(@item.CarListing.ProductId)">
+                                            <i class="fa fa-shopping-cart"></i> add to cart
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <!-- Empty Wishlist -->
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="fa-regular fa-heart fa-5x text-muted"></i>
+                        </div>
+                        <h3 class="text-muted mb-3">Your wishlist is empty</h3>
+                        <p class="text-muted mb-4">
+                            Start browsing our amazing collection of vehicles and save your favorites!
+                        </p>
+                        <a asp-controller="Product" asp-action="Index" class="btn btn-primary btn-lg">
+                            <i class="fa fa-car me-2"></i>Browse Cars
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /SECTION -->
+
+@section Scripts {
+    <script>
+        function addToCart(carId) {
+            $.ajax({
+                url: '/Panier/AddProduct',
+                type: 'POST',
+                data: { id: carId },
+                success: function(response) {
+                    showNotification('Car added to cart successfully!', 'success');
+                    updateCartCount();
+                },
+                error: function(xhr, status, error) {
+                    showNotification('Error adding car to cart: ' + error, 'error');
+                }
+            });
+        }
+
+        function removeFromWishlist(productId) {
+            if (confirm('Remove this car from your wishlist?')) {
+                $.ajax({
+                    url: '/Wishlist/RemoveFromWishlist',
+                    type: 'POST',
+                    data: { productId: productId },
+                    success: function(response) {
+                        showNotification('Removed from wishlist!', 'success');
+                        location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        showNotification('Error removing from wishlist: ' + error, 'error');
+                    }
+                });
+            }
+        }
+
+        function quickView(carId) {
+            window.location.href = '/Product/Details/' + carId;
+        }
+
+        function showNotification(message, type) {
+            // Create notification element
+            var notification = $('<div class="alert alert-' + (type === 'success' ? 'success' : 'danger') + ' alert-dismissible fade show notification-toast" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">' +
+                message +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                '</div>');
+
+            // Add to page
+            $('body').append(notification);
+
+            // Auto remove after 3 seconds
+            setTimeout(function() {
+                notification.alert('close');
+            }, 3000);
+        }
+
+        function updateCartCount() {
+            $.ajax({
+                url: '/Panier/GetCartCount',
+                type: 'GET',
+                success: function(response) {
+                    $('#cart-count').text(response.cartCount);
+                }
+            });
+        }
+    </script>
+}

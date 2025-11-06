@@ -1,0 +1,138 @@
+@model TP2.Models.Category
+
+@{
+    ViewData["Title"] = "Edit Category - Tunis Motors";
+}
+
+<!-- BREADCRUMB -->
+<div id="breadcrumb" class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="breadcrumb-header">Edit Category</h3>
+                <ul class="breadcrumb-tree">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/Dashboard">Dashboard</a></li>
+                    <li><a href="/Category">Categories</a></li>
+                    <li class="active">Edit</li>
+                </ul>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /BREADCRUMB -->
+
+<!-- SECTION -->
+<div class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card shadow">
+                    <div class="card-header bg-warning text-white">
+                        <h4 class="mb-0"><i class="fa fa-edit me-2"></i>Edit Category</h4>
+                    </div>
+                    <div class="card-body">
+                        @if (TempData["Success"] != null)
+                        {
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                @TempData["Success"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        }
+
+                        @if (TempData["Error"] != null)
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                @TempData["Error"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        }
+
+                        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" asp-for="CategoryId" />
+
+                            <div asp-validation-summary="All" class="text-danger mb-4"></div>
+
+                            <div class="mb-4">
+                                <label asp-for="CategoryName" class="form-label fw-bold">
+                                    <i class="fa fa-tag me-2 text-primary"></i>Category Name
+                                </label>
+                                <input asp-for="CategoryName" class="form-control form-control-lg" placeholder="Enter category name" required />
+                                <span asp-validation-for="CategoryName" class="text-danger"></span>
+                                <small class="form-text text-muted">This name will be displayed to users when browsing cars.</small>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fa fa-image me-2 text-success"></i>Category Image
+                                </label>
+                                @if (!string.IsNullOrEmpty(Model.Image))
+                                {
+                                    <div class="mb-3">
+                                        <img src="@Model.Image" alt="Current category image" class="img-thumbnail" style="max-width: 200px; max-height: 200px;" />
+                                        <small class="form-text text-muted d-block">Current image. Upload a new one to replace it.</small>
+                                    </div>
+                                }
+                                <input type="file" name="ImageFile" class="form-control" accept=".jpg,.jpeg,.png,.gif" />
+                                <small class="form-text text-muted">Optional: Upload a new image for this category (max 5MB, .jpg, .jpeg, .png, .gif only). Leave empty to keep current image.</small>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <hr>
+                                    <div class="d-flex justify-content-between">
+                                        <a asp-action="Index" class="btn btn-outline-secondary">
+                                            <i class="fa fa-arrow-left me-2"></i>Back to Categories
+                                        </a>
+                                        <button type="submit" class="btn btn-success btn-lg">
+                                            <i class="fa fa-save me-2"></i>Update Category
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Category Info Card -->
+                <div class="card shadow mt-4">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="fa fa-info-circle me-2"></i>Category Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="p-3">
+                                    <h3 class="text-primary mb-1">@Model.CategoryId</h3>
+                                    <small class="text-muted">Category ID</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3">
+                                    <h3 class="text-success mb-1">@(Model.CarListings?.Count ?? 0)</h3>
+                                    <small class="text-muted">Cars in Category</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /SECTION -->
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

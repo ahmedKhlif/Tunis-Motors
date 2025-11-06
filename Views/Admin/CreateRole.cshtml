@@ -1,0 +1,141 @@
+@model TP2.ViewModels.CreateRoleViewModel
+
+@{
+    ViewData["Title"] = "Create New Role";
+}
+
+<!-- BREADCRUMB -->
+<div class="bg-light py-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item"><a href="/Dashboard" class="text-decoration-none">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/Admin/ListRoles" class="text-decoration-none">Roles</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Create Role</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="h2 mb-3"><i class="fa fa-user-shield me-2 text-primary"></i>Create New Role</h1>
+                <p class="text-muted">Add a new user role to manage access permissions</p>
+            </div>
+
+            <!-- Create Role Form -->
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fa fa-plus-circle me-2"></i>Role Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="CreateRole" method="post" novalidate>
+                        <div asp-validation-summary="All" class="alert alert-danger mb-4"></div>
+
+                        <div class="mb-4">
+                            <label asp-for="RoleName" class="form-label fw-semibold">
+                                <i class="fa fa-tag me-2 text-primary"></i>Role Name
+                            </label>
+                            <input asp-for="RoleName" class="form-control form-control-lg"
+                                   placeholder="Enter role name (e.g., Admin, Manager, Seller)"
+                                   autocomplete="off">
+                            <div class="form-text">
+                                Choose a descriptive name for the role that clearly indicates its permissions
+                            </div>
+                            <span asp-validation-for="RoleName" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Role Examples -->
+                        <div class="mb-4">
+                            <h6 class="fw-semibold mb-3">Common Role Examples:</h6>
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <div class="p-2 bg-light rounded text-center small">
+                                        <strong>Admin</strong><br>
+                                        <small class="text-muted">Full system access</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-2 bg-light rounded text-center small">
+                                        <strong>Manager</strong><br>
+                                        <small class="text-muted">Approval permissions</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-2 bg-light rounded text-center small">
+                                        <strong>Seller</strong><br>
+                                        <small class="text-muted">Listing management</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-3 pt-3 border-top">
+                            <a asp-action="ListRoles" class="btn btn-outline-secondary flex-fill">
+                                <i class="fa fa-arrow-left me-2"></i>Back to Roles
+                            </a>
+                            <button type="submit" class="btn btn-primary flex-fill">
+                                <i class="fa fa-save me-2"></i>Create Role
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="card border-0 shadow-lg mt-4">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">
+                        <i class="fa fa-info-circle me-2 text-info"></i>Role Management Tips
+                    </h6>
+                    <ul class="list-unstyled mb-0 small">
+                        <li class="mb-2">
+                            <i class="fa fa-check text-success me-2"></i>
+                            Use clear, descriptive role names
+                        </li>
+                        <li class="mb-2">
+                            <i class="fa fa-check text-success me-2"></i>
+                            Assign minimal required permissions
+                        </li>
+                        <li class="mb-2">
+                            <i class="fa fa-check text-success me-2"></i>
+                            Regularly review and update roles
+                        </li>
+                        <li class="mb-0">
+                            <i class="fa fa-check text-success me-2"></i>
+                            Document role responsibilities
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Form validation enhancement
+        $(document).ready(function() {
+            // Auto-focus on role name input
+            $('#RoleName').focus();
+
+            // Form submission feedback
+            $('form').on('submit', function() {
+                const submitBtn = $(this).find('button[type="submit"]');
+                const originalText = submitBtn.html();
+                submitBtn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin me-2"></i>Creating...');
+
+                // Re-enable after 3 seconds (in case of error)
+                setTimeout(() => {
+                    submitBtn.prop('disabled', false).html(originalText);
+                }, 3000);
+            });
+        });
+    </script>
+}

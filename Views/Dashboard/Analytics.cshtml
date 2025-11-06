@@ -1,0 +1,476 @@
+@model TP2.ViewModels.AnalyticsViewModel
+
+@{
+    ViewData["Title"] = "Analytics Dashboard";
+}
+
+<!-- BREADCRUMB -->
+<div class="bg-light py-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item"><a href="/Dashboard" class="text-decoration-none">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Analytics</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1"><i class="fa fa-chart-bar me-2 text-primary"></i>Analytics Dashboard</h1>
+                    <p class="text-muted mb-0">Comprehensive insights into your car marketplace performance</p>
+                </div>
+                <div class="text-end">
+                    <small class="text-muted">Last updated: @DateTime.Now.ToString("MMM dd, yyyy HH:mm")</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Overview -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-lg h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fa fa-dollar-sign me-2"></i>Revenue Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="p-3">
+                                <h3 class="text-success mb-1">@Model.MonthlyRevenue.ToString("N0") TND</h3>
+                                <small class="text-muted">This Month</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3">
+                                <h3 class="text-primary mb-1">@Model.TotalRevenue.ToString("N0") TND</h3>
+                                <small class="text-muted">Total Revenue</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-lg h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fa fa-users me-2"></i>User Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="p-3">
+                                <h3 class="text-info mb-1">@(Model.UserRegistrations.FirstOrDefault()?.Count ?? 0)</h3>
+                                <small class="text-muted">Active Users</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3">
+                                <h3 class="text-warning mb-1">@(Model.PopularBrands.Count + Model.ListingsByCategory.Count)</h3>
+                                <small class="text-muted">Total Categories</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row mb-4">
+        <!-- Popular Brands Chart -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-lg h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fa fa-car me-2"></i>Popular Brands</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.PopularBrands.Any())
+                    {
+                        <div style="height: 300px;">
+                            <canvas id="brandsChart"></canvas>
+                        </div>
+                        <div class="text-center mt-3">
+                            <small class="text-muted">Distribution of car brands in listings</small>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fa fa-car fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No brand data available</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Distribution Chart -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-lg h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fa fa-tags me-2"></i>Category Distribution</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.ListingsByCategory.Any())
+                    {
+                        <div style="height: 300px;">
+                            <canvas id="categoriesChart"></canvas>
+                        </div>
+                        <div class="text-center mt-3">
+                            <small class="text-muted">Listings distribution across categories</small>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fa fa-tags fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No category data available</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Trend Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fa fa-chart-line me-2"></i>Revenue Trends</h5>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                    <div class="text-center mt-3">
+                        <small class="text-muted">Monthly revenue performance and projections</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Analytics -->
+    <div class="row">
+        <!-- Brand Performance Table -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fa fa-trophy me-2"></i>Brand Performance</h5>
+                    <span class="badge bg-light text-dark">@Model.PopularBrands.Count brands</span>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.PopularBrands.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="border-0">Brand</th>
+                                        <th class="border-0 text-center">Listings</th>
+                                        <th class="border-0 text-center">Market Share</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var brand in Model.PopularBrands)
+                                    {
+                                        var totalListings = Model.PopularBrands.Sum(b => b.Count);
+                                        var marketShare = (brand.Count * 100.0) / totalListings;
+                                        <tr>
+                                            <td class="fw-medium">
+                                                <i class="fa fa-car me-2 text-primary"></i>@brand.Brand
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-primary">@brand.Count</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-secondary">@marketShare.ToString("F1")%</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fa fa-chart-bar fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No brand analytics available</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Distribution Table -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fa fa-pie-chart me-2"></i>Category Distribution</h5>
+                    <span class="badge bg-light text-dark">@Model.ListingsByCategory.Count categories</span>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.ListingsByCategory.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="border-0">Category</th>
+                                        <th class="border-0 text-center">Listings</th>
+                                        <th class="border-0 text-center">Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var category in Model.ListingsByCategory)
+                                    {
+                                        var totalListings = Model.ListingsByCategory.Sum(c => c.Count);
+                                        var percentage = (category.Count * 100.0) / totalListings;
+                                        <tr>
+                                            <td class="fw-medium">
+                                                <i class="fa fa-tag me-2 text-warning"></i>@category.Category
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-warning text-dark">@category.Count</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-info">@percentage.ToString("F1")%</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fa fa-pie-chart fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No category analytics available</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0"><i class="fa fa-lightbulb me-2"></i>Key Insights</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <i class="fa fa-trending-up fa-2x text-success mb-2"></i>
+                                <h6>Revenue Growth</h6>
+                                <p class="text-muted small">Track monthly revenue trends to identify growth patterns</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <i class="fa fa-users fa-2x text-primary mb-2"></i>
+                                <h6>User Engagement</h6>
+                                <p class="text-muted small">Monitor user activity and platform adoption rates</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <i class="fa fa-car fa-2x text-warning mb-2"></i>
+                                <h6>Market Trends</h6>
+                                <p class="text-muted small">Analyze popular brands and categories for inventory planning</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Prepare data for charts
+            @if (Model.PopularBrands.Any())
+            {
+                <text>
+                const brandsData = {
+                    labels: [@foreach (var brand in Model.PopularBrands.Take(8)) { <text>'@brand.Brand',</text> }],
+                    datasets: [{
+                        data: [@foreach (var brand in Model.PopularBrands.Take(8)) { <text>@brand.Count,</text> }],
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                            '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                };
+                </text>
+            }
+
+            @if (Model.ListingsByCategory.Any())
+            {
+                <text>
+                const categoriesData = {
+                    labels: [@foreach (var category in Model.ListingsByCategory) { <text>'@category.Category',</text> }],
+                    datasets: [{
+                        label: 'Listings',
+                        data: [@foreach (var category in Model.ListingsByCategory) { <text>@category.Count,</text> }],
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                            '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF',
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'
+                        ],
+                        borderColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                            '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF',
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'
+                        ],
+                        borderWidth: 1
+                    }]
+                };
+                </text>
+            }
+
+            // Revenue chart data (mock data for demonstration)
+            const revenueData = {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Monthly Revenue (TND)',
+                    data: [12000, 15000, 18000, 22000, 19000, 25000, 28000, 32000, 29000, 35000, @Model.MonthlyRevenue.ToString().Replace(",", "."), 40000],
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            };
+
+            // Chart configurations
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
+                }
+            };
+
+            // Initialize charts
+            @if (Model.PopularBrands.Any())
+            {
+                <text>
+                const brandsCtx = document.getElementById('brandsChart').getContext('2d');
+                new Chart(brandsCtx, {
+                    type: 'doughnut',
+                    data: brandsData,
+                    options: {
+                        ...chartOptions,
+                        plugins: {
+                            ...chartOptions.plugins,
+                            legend: {
+                                ...chartOptions.plugins.legend,
+                                position: 'right'
+                            }
+                        }
+                    }
+                });
+                </text>
+            }
+
+            @if (Model.ListingsByCategory.Any())
+            {
+                <text>
+                const categoriesCtx = document.getElementById('categoriesChart').getContext('2d');
+                new Chart(categoriesCtx, {
+                    type: 'bar',
+                    data: categoriesData,
+                    options: {
+                        ...chartOptions,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0,0,0,0.05)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        },
+                        plugins: {
+                            ...chartOptions.plugins,
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+                </text>
+            }
+
+            // Revenue chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: revenueData,
+                options: {
+                    ...chartOptions,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString() + ' TND';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        ...chartOptions.plugins,
+                        legend: {
+                            display: false
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+
+            console.log('Analytics dashboard with Chart.js loaded successfully');
+        });
+    </script>
+}

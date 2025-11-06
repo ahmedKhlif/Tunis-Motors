@@ -1,0 +1,83 @@
+@model TP2.ViewModels.MessageViewModel
+
+@{
+    ViewData["Title"] = "Compose Message - Contact Support";
+}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fa fa-envelope me-2"></i>Contact Support Team</h4>
+                    <small>Choose who you want to contact from our support team</small>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Compose" method="post">
+                        <div asp-validation-summary="All" class="text-danger mb-4"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="ReceiverId" class="form-label">To</label>
+                            @if (ViewBag.Receivers != null && ((dynamic)ViewBag.Receivers).Count > 0)
+                            {
+                                <select asp-for="ReceiverId" class="form-control">
+                                    <option value="">-- Select Recipient --</option>
+                                    @foreach (var receiver in ViewBag.Receivers)
+                                    {
+                                        var roleIcon = receiver.Role == "Admin" ? "fa-crown" :
+                                                      receiver.Role == "Manager" ? "fa-user-tie" : "fa-user";
+                                        var roleColor = receiver.Role == "Admin" ? "text-danger" :
+                                                       receiver.Role == "Manager" ? "text-warning" : "text-info";
+                                        <option value="@receiver.Id">
+                                            <i class="fa @roleIcon @roleColor me-1"></i>@receiver.UserName (@receiver.Role)
+                                        </option>
+                                    }
+                                </select>
+                            }
+                            else
+                            {
+                                <input asp-for="ReceiverId" class="form-control" readonly />
+                            }
+                            <span asp-validation-for="ReceiverId" class="text-danger"></span>
+                            <small class="form-text text-muted">Choose who you want to contact: Admin, Manager, or Seller</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Subject" class="form-label">Subject</label>
+                            <input asp-for="Subject" class="form-control" placeholder="Enter message subject" />
+                            <span asp-validation-for="Subject" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Content" class="form-label">Message</label>
+                            <textarea asp-for="Content" class="form-control" rows="6" placeholder="Write your message here..."></textarea>
+                            <span asp-validation-for="Content" class="text-danger"></span>
+                        </div>
+
+                        <input type="hidden" asp-for="ListingId" />
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <a asp-controller="Product" asp-action="Index" class="btn btn-outline-secondary">
+                                        <i class="fa fa-arrow-left me-2"></i>Back to Cars
+                                    </a>
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="fa fa-paper-plane me-2"></i>Send Message
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,10 @@
+@model IEnumerable<TP2.Models.Category>
+
+@if (Model != null && Model.Any())
+{
+    <option value="">All Categories</option>
+    @foreach (var category in Model)
+    {
+        <option value="@category.CategoryId">@category.CategoryName</option>
+    }
+}

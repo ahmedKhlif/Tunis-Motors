@@ -1,0 +1,372 @@
+@{
+    ViewData["Title"] = "Tunis Motors - Home";
+}
+
+@inject TP2.Models.Repositories.IProductRepository ProductRepository
+@inject TP2.Models.Repositories.ICategoryRepository CategoryRepository
+
+<!-- HOME -->
+<div id="home">
+    <!-- container -->
+    <div class="container">
+        <!-- home wrap -->
+        <div class="home-wrap">
+            <!-- home slick -->
+            <div id="home-slick" class="slick-slider">
+                <!-- banner -->
+                <div class="slick-slide">
+                    <div class="banner-container">
+                        <img src="./images/banner01.png" alt="Premium Cars" class="banner-image">
+                        <div class="banner-caption text-center">
+                            <h1>Premium Cars</h1>
+                            <h3 class="white-color font-weak">Up to 50% Discount</h3>
+                            <button class="primary-btn">Shop Now</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- /banner -->
+
+                <!-- banner -->
+                <div class="slick-slide">
+                    <div class="banner-container">
+                        <img src="./images/banner02.png" alt="Hot Deal" class="banner-image">
+                        <div class="banner-caption">
+                            <h1 class="primary-color">HOT DEAL<br><span class="white-color font-weak">Up to 50% OFF</span></h1>
+                            <button class="primary-btn">Shop Now</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- /banner -->
+                    <div class="slick-slide">
+                    <div class="banner-container">
+                        <img src="./images/banner03.png" alt="Premium Cars" class="banner-image">
+                        <div class="banner-caption text-center">
+                            <h1>Premium Cars</h1>
+                            <h3 class="white-color font-weak">Up to 50% Discount</h3>
+                            <button class="primary-btn">Shop Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /home slick -->
+        </div>
+        <!-- /home wrap -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /HOME -->
+<!-- /section -->
+
+<!-- section -->
+<div class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <!-- section title -->
+            <div class="col-md-12">
+                <div class="section-title">
+                    <h2 class="title">Featured Cars</h2>
+                    <div class="pull-right">
+                        <div class="product-slick-dots-1 custom-dots"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- section title -->
+
+            <!-- Product Slick -->
+            <div class="col-md-12 col-sm-6 col-xs-6">
+                <div class="row">
+                    <div class="products-tabs">
+                        <!-- tab -->
+                        <div id="tab1" class="tab-pane active">
+                            <div class="products-slick" data-nav="#slick-nav-1">
+                                @foreach (var car in ProductRepository.GetAll().Where(c => c.IsApproved).Take(5))
+                                {
+                                    <!-- product -->
+                                    <div class="product">
+                                        <div class="product-img">
+                                            <img src="@Url.Content("~/images/" + (car.Image ?? "noimage.jpg"))" alt="@car.Name" onerror="this.src='@Url.Content("~/images/noimage.jpg")'">
+                                            <div class="product-label">
+                                                @if (car.Condition == "New")
+                                                {
+                                                    <span class="new">NEW</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="sale">USED</span>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="product-body">
+                                            <p class="product-category">@car.Category?.CategoryName</p>
+                                            <h3 class="product-name"><a asp-controller="Product" asp-action="Details" asp-route-id="@car.ProductId">@car.Name (@car.Year)</a></h3>
+                                            <h4 class="product-price">@car.Price.ToString("N0") TND</h4>
+                                            <div class="product-rating">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                            </div>
+                                            <div class="product-btns">
+                                                <button class="add-to-wishlist" data-product-id="@car.ProductId" onclick="addToWishlist(@car.ProductId)">
+                                                    <i class="fa-regular fa-heart"></i><span class="tooltipp">add to wishlist</span>
+                                                </button>
+                                                <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
+                                                <button class="quick-view" onclick="quickView(@car.ProductId)">
+                                                    <i class="fa fa-eye"></i><span class="tooltipp">quick view</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="add-to-cart">
+                                            @if (User.Identity.IsAuthenticated)
+                                            {
+                                                <button class="add-to-cart-btn" onclick="addToCart(@car.ProductId)">
+                                                    <i class="fa fa-shopping-cart"></i> add to cart
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <a href="@Url.Action("Login", "Account")" class="add-to-cart-btn">
+                                                    <i class="fa fa-sign-in"></i> login to buy
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                    <!-- /product -->
+                                }
+
+                            </div>
+                            <div id="slick-nav-1" class="products-slick-nav"></div>
+                        </div>
+                        <!-- /tab -->
+                    </div>
+                </div>
+            </div>
+            <!-- /Product Slick -->
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /section -->
+
+<!-- HOT DEAL SECTION -->
+<div id="hot-deal" class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="hot-deal">
+                    <ul class="hot-deal-countdown">
+                        <li>
+                            <div>
+                                <h3>02</h3>
+                                <span>Days</span>
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                <h3>10</h3>
+                                <span>Hours</span>
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                <h3>34</h3>
+                                <span>Mins</span>
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                <h3>60</h3>
+                                <span>Secs</span>
+                            </div>
+                        </li>
+                    </ul>
+                    <h2 class="text-uppercase">hot deal this week</h2>
+                    <p>New Collection Up to 50% OFF</p>
+                    <a class="primary-btn cta-btn" asp-controller="Product" asp-action="Index">Browse Cars</a>
+                </div>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /HOT DEAL SECTION -->
+
+<!-- NEWSLETTER -->
+<div id="newsletter" class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="newsletter">
+                    <p>Sign Up for the <strong>TUNIS MOTORS</strong></p>
+                    <form method="post" asp-controller="Home" asp-action="Subscribe">
+                        <input class="input" type="email" name="email" placeholder="Enter Your Email" required>
+                        <button type="submit" class="newsletter-btn"><i class="fa fa-envelope"></i> Subscribe</button>
+                    </form>
+                    <p>Sign Up for the <strong>TUNIS MOTORS</strong></p>
+                    <ul class="newsletter-follow">
+                        <li>
+                            <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa-brands fa-pinterest"></i></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /NEWSLETTER -->
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize wishlist icons on page load
+            initializeWishlistIcons();
+        });
+
+        function initializeWishlistIcons() {
+            $('button[data-product-id]').each(function() {
+                var productId = $(this).data('product-id');
+                var button = $(this);
+                var icon = button.find('i');
+                var tooltip = button.find('.tooltipp');
+
+                $.ajax({
+                    url: '/Wishlist/IsInWishlist',
+                    type: 'GET',
+                    data: { productId: productId },
+                    success: function(response) {
+                        if (response.isInWishlist) {
+                            icon.removeClass('fa-regular fa-heart').addClass('fa-solid fa-heart text-danger');
+                            tooltip.text('remove from wishlist');
+                        } else {
+                            icon.removeClass('fa-solid fa-heart text-danger').addClass('fa-regular fa-heart');
+                            tooltip.text('add to wishlist');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Error checking wishlist status: ' + error);
+                    }
+                });
+            });
+        }
+
+        function addToCart(carId) {
+            $.ajax({
+                url: '/Panier/AddProduct',
+                type: 'POST',
+                data: { id: carId },
+                success: function(response) {
+                    showNotification('Car added to cart successfully!', 'success');
+                    updateCartCount();
+                },
+                error: function(xhr, status, error) {
+                    showNotification('Error adding car to cart: ' + error, 'error');
+                }
+            });
+        }
+
+        function addToWishlist(carId) {
+            $.ajax({
+                url: '/Wishlist/IsInWishlist',
+                type: 'GET',
+                data: { productId: carId },
+                success: function(isInWishlistResponse) {
+                    if (isInWishlistResponse.isInWishlist) {
+                        // Remove from wishlist
+                        $.ajax({
+                            url: '/Wishlist/RemoveFromWishlist',
+                            type: 'POST',
+                            data: { productId: carId },
+                            success: function(response) {
+                                showNotification('Removed from wishlist!', 'success');
+                                updateWishlistIcon(carId, false);
+                            },
+                            error: function(xhr, status, error) {
+                                showNotification('Error removing from wishlist: ' + error, 'error');
+                            }
+                        });
+                    } else {
+                        // Add to wishlist
+                        $.ajax({
+                            url: '/Wishlist/AddToWishlist',
+                            type: 'POST',
+                            data: { productId: carId },
+                            success: function(response) {
+                                showNotification('Car added to wishlist!', 'success');
+                                updateWishlistIcon(carId, true);
+                            },
+                            error: function(xhr, status, error) {
+                                showNotification('Error adding to wishlist: ' + error, 'error');
+                            }
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showNotification('Error checking wishlist: ' + error, 'error');
+                }
+            });
+        }
+
+        function updateWishlistIcon(productId, isInWishlist) {
+            var button = $('button[data-product-id="' + productId + '"]');
+            var icon = button.find('i');
+            var tooltip = button.find('.tooltipp');
+            if (isInWishlist) {
+                icon.removeClass('fa-regular fa-heart').addClass('fa-solid fa-heart text-danger');
+                tooltip.text('remove from wishlist');
+            } else {
+                icon.removeClass('fa-solid fa-heart text-danger').addClass('fa-regular fa-heart');
+                tooltip.text('add to wishlist');
+            }
+        }
+
+        function quickView(carId) {
+            window.location.href = '/Product/Details/' + carId;
+        }
+
+        function showNotification(message, type) {
+            // Create notification element
+            var notification = $('<div class="alert alert-' + (type === 'success' ? 'success' : 'danger') + ' alert-dismissible fade show notification-toast" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">' +
+                message +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                '</div>');
+
+            // Add to page
+            $('body').append(notification);
+
+            // Auto remove after 3 seconds
+            setTimeout(function() {
+                notification.alert('close');
+            }, 3000);
+        }
+
+        function updateCartCount() {
+            $.ajax({
+                url: '/Panier/GetCartCount',
+                type: 'GET',
+                success: function(response) {
+                    $('#cart-count').text(response.cartCount);
+                }
+            });
+        }
+    </script>
+}

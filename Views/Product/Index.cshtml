@@ -1,0 +1,510 @@
+@model IEnumerable<TP2.Models.CarListing>
+
+@{
+    ViewData["Title"] = "Tunis Motors - Car Listings";
+}
+
+<!-- BREADCRUMB -->
+<div id="breadcrumb" class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="breadcrumb-header">Car Listings</h3>
+                <ul class="breadcrumb-tree">
+                    <li><a href="#">Home</a></li>
+                    <li class="active">Browse Cars</li>
+                </ul>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /BREADCRUMB -->
+
+<!-- SECTION -->
+<div class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <!-- ASIDE -->
+            <div id="aside" class="col-md-3">
+                <!-- aside Widget -->
+                <div class="aside">
+                    <h3 class="aside-title">Categories</h3>
+                    <div class="checkbox-filter">
+                        @await Html.PartialAsync("_CategoriesMenu", ViewData["Categories"])
+                    </div>
+                </div>
+                <!-- /aside Widget -->
+
+                <!-- aside Widget -->
+                <div class="aside">
+                    <h3 class="aside-title">Price Range</h3>
+                    <div class="price-filter">
+                        <div id="price-slider"></div>
+                        <div class="input-number price-min">
+                            <input id="price-min" type="number" placeholder="Min Price">
+                            <span class="qty-up">+</span>
+                            <span class="qty-down">-</span>
+                        </div>
+                        <span>-</span>
+                        <div class="input-number price-max">
+                            <input id="price-max" type="number" placeholder="Max Price">
+                            <span class="qty-up">+</span>
+                            <span class="qty-down">-</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- /aside Widget -->
+
+                <!-- aside Widget -->
+                <div class="aside">
+                    <h3 class="aside-title">Brands</h3>
+                    <div class="checkbox-filter">
+                        @if (ViewBag.Brands != null)
+                        {
+                            foreach (var brand in ViewBag.Brands)
+                            {
+                                <div class="input-checkbox">
+                                    <input type="checkbox" id="brand-@brand" name="brand-filter" value="@brand">
+                                    <label for="brand-@brand">
+                                        <span></span>
+                                        @brand
+                                    </label>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+                <!-- /aside Widget -->
+            </div>
+            <!-- /ASIDE -->
+
+            <!-- STORE -->
+            <div id="store" class="col-md-9">
+                <!-- store top filter -->
+                <div class="store-filter clearfix">
+                    <div class="store-sort">
+                        <label>
+                            Sort By:
+                            <select class="input-select">
+                                <option value="0" selected="@(ViewBag.SortBy == 0)">Newest</option>
+                                <option value="1" selected="@(ViewBag.SortBy == 1)">Price: Low to High</option>
+                                <option value="2" selected="@(ViewBag.SortBy == 2)">Price: High to Low</option>
+                                <option value="3" selected="@(ViewBag.SortBy == 3)">Oldest</option>
+                            </select>
+                        </label>
+                    </div>
+                    <ul class="store-grid">
+                        <li class="active"><i class="fa fa-th"></i></li>
+                        <li><a href="#"><i class="fa fa-th-list"></i></a></li>
+                    </ul>
+                </div>
+                <!-- /store top filter -->
+
+                <!-- store products -->
+                <div class="row">
+                    @if (Model.Any())
+                    {
+                        foreach (var car in Model)
+                        {
+                            <!-- product -->
+                            <div class="col-md-4 col-xs-6">
+                                <div class="product">
+                                    <div class="product-img">
+                                        <img src="@Url.Content("~/images/" + (car.Image ?? "noimage.jpg"))" alt="@car.Name" onerror="this.src='@Url.Content("~/images/noimage.jpg")'">
+                                        <div class="product-label">
+                                            @if (car.Condition == "New")
+                                            {
+                                                <span class="new">NEW</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="sale">USED</span>
+                                            }
+                                            @if (!car.IsApproved)
+                                            {
+                                                <span class="sale">PENDING</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="product-body">
+                                        <p class="product-category">@car.Category?.CategoryName</p>
+                                        <h3 class="product-name"><a asp-controller="Product" asp-action="Details" asp-route-id="@car.ProductId">@car.Name (@car.Year)</a></h3>
+                                        <h4 class="product-price">@car.Price.ToString("N0") TND</h4>
+                                        <div class="product-rating">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                if (i <= car.Rating)
+                                                {
+                                                    <i class="fa fa-star"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="fa fa-star-o"></i>
+                                                }
+                                            }
+                                        </div>
+                                        <div class="product-btns">
+                                            <button class="add-to-wishlist" data-product-id="@car.ProductId" onclick="addToWishlist(@car.ProductId)">
+                                                <i class="fa-regular fa-heart"></i><span class="tooltipp">add to wishlist</span>
+                                            </button>
+                                            <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
+                                            <button class="quick-view" onclick="quickView(@car.ProductId)">
+                                                <i class="fa fa-eye"></i><span class="tooltipp">quick view</span>
+                                            </button>
+                                            @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || User.IsInRole("Manager") || car.SellerId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value))
+                                            {
+                                                <button class="quick-edit" onclick="editCar(@car.ProductId)">
+                                                    <i class="fa fa-edit"></i><span class="tooltipp">edit</span>
+                                                </button>
+                                                <button class="quick-delete" onclick="deleteCar(@car.ProductId)">
+                                                    <i class="fa fa-trash"></i><span class="tooltipp">delete</span>
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="add-to-cart">
+                                        @if (User.Identity.IsAuthenticated)
+                                        {
+                                            <button class="add-to-cart-btn" onclick="addToCart(@car.ProductId)">
+                                                <i class="fa fa-shopping-cart"></i> add to cart
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <a href="@Url.Action("Login", "Account")" class="add-to-cart-btn">
+                                                <i class="fa fa-sign-in"></i> login to buy
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /product -->
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-md-12">
+                            <div class="text-center py-5">
+                                <i class="fa fa-car fa-3x text-muted mb-3"></i>
+                                <h4 class="text-muted">No cars found</h4>
+                                <p class="text-muted">Try adjusting your search criteria or browse all listings.</p>
+                                <a href="@Url.Action("Index")" class="primary-btn">View All Cars</a>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <!-- /store products -->
+
+                <!-- store bottom filter -->
+                @if (ViewBag.TotalPages > 1)
+                {
+                    <div class="store-filter clearfix">
+                        <span class="store-qty">Showing page @ViewBag.CurrentPage of @ViewBag.TotalPages</span>
+                        <ul class="store-pagination">
+                            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                            {
+                                <li class="@(i == ViewBag.CurrentPage ? "active" : "")">
+                                        <a asp-action="Index"
+                                           asp-route-page="@i"
+                                           asp-route-searchTerm="@ViewBag.SearchTerm"
+                                           asp-route-brand="@ViewBag.Brand"
+                                           asp-route-minPrice="@ViewBag.MinPrice"
+                                           asp-route-maxPrice="@ViewBag.MaxPrice"
+                                           asp-route-minYear="@ViewBag.MinYear"
+                                           asp-route-sortBy="@ViewBag.SortBy">@i</a>
+                                    </li>
+                            }
+                        </ul>
+                    </div>
+                }
+                <!-- /store bottom filter -->
+            </div>
+            <!-- /STORE -->
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /SECTION -->
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize wishlist icons on page load
+            initializeWishlistIcons();
+
+            // Initialize price slider
+            initializePriceSlider();
+
+            // Initialize filters
+            initializeFilters();
+
+            // Initialize view toggle
+            initializeViewToggle();
+
+            // Initialize sort dropdown
+            initializeSort();
+        });
+
+        function initializeWishlistIcons() {
+            $('button[data-product-id]').each(function() {
+                var productId = $(this).data('product-id');
+                var button = $(this);
+                var icon = button.find('i');
+                var tooltip = button.find('.tooltipp');
+
+                $.ajax({
+                    url: '/Wishlist/IsInWishlist',
+                    type: 'GET',
+                    data: { productId: productId },
+                    success: function(response) {
+                        if (response.isInWishlist) {
+                            icon.removeClass('fa-regular fa-heart').addClass('fa-solid fa-heart');
+                            tooltip.text('remove from wishlist');
+                        } else {
+                            icon.removeClass('fa-solid fa-heart').addClass('fa-regular fa-heart');
+                            tooltip.text('add to wishlist');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Error checking wishlist status: ' + error);
+                    }
+                });
+            });
+        }
+
+        function addToCart(carId) {
+            $.ajax({
+                url: '/Panier/AddProduct',
+                type: 'POST',
+                data: { id: carId },
+                success: function(response) {
+                    // Show success message without alert dialog
+                    showNotification('Car added to cart successfully!', 'success');
+                    // Update cart count
+                    updateCartCount();
+                },
+                error: function(xhr, status, error) {
+                    showNotification('Error adding car to cart: ' + error, 'error');
+                }
+            });
+        }
+
+        function addToWishlist(carId) {
+            $.ajax({
+                url: '/Wishlist/IsInWishlist',
+                type: 'GET',
+                data: { productId: carId },
+                success: function(isInWishlistResponse) {
+                    if (isInWishlistResponse.isInWishlist) {
+                        // Remove from wishlist
+                        $.ajax({
+                            url: '/Wishlist/RemoveFromWishlist',
+                            type: 'POST',
+                            data: { productId: carId },
+                            success: function(response) {
+                                showNotification('Removed from wishlist!', 'success');
+                                updateWishlistIcon(carId, false);
+                            },
+                            error: function(xhr, status, error) {
+                                showNotification('Error removing from wishlist: ' + error, 'error');
+                            }
+                        });
+                    } else {
+                        // Add to wishlist
+                        $.ajax({
+                            url: '/Wishlist/AddToWishlist',
+                            type: 'POST',
+                            data: { productId: carId },
+                            success: function(response) {
+                                showNotification('Car added to wishlist!', 'success');
+                                updateWishlistIcon(carId, true);
+                            },
+                            error: function(xhr, status, error) {
+                                showNotification('Error adding to wishlist: ' + error, 'error');
+                            }
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showNotification('Error checking wishlist: ' + error, 'error');
+                }
+            });
+        }
+
+        function updateWishlistIcon(productId, isInWishlist) {
+            var button = $('button[data-product-id="' + productId + '"]');
+            var icon = button.find('i');
+            var tooltip = button.find('.tooltipp');
+            if (isInWishlist) {
+                icon.removeClass('fa-regular fa-heart').addClass('fa-solid fa-heart text-danger');
+                tooltip.text('remove from wishlist');
+            } else {
+                icon.removeClass('fa-solid fa-heart text-danger').addClass('fa-regular fa-heart');
+                tooltip.text('add to wishlist');
+            }
+        }
+
+        function quickView(carId) {
+            window.location.href = '/Product/Details/' + carId;
+        }
+
+        function editCar(carId) {
+            window.location.href = '/Product/Edit/' + carId;
+        }
+
+        function deleteCar(carId) {
+            if (confirm('Are you sure you want to delete this car listing?')) {
+                window.location.href = '/Product/Delete/' + carId;
+            }
+        }
+
+        function showNotification(message, type) {
+            // Create notification element
+            var notification = $('<div class="alert alert-' + (type === 'success' ? 'success' : 'danger') + ' alert-dismissible fade show notification-toast" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">' +
+                message +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                '</div>');
+
+            // Add to page
+            $('body').append(notification);
+
+            // Auto remove after 3 seconds
+            setTimeout(function() {
+                notification.alert('close');
+            }, 3000);
+        }
+
+        function updateCartCount() {
+            $.ajax({
+                url: '/Panier/GetCartCount',
+                type: 'GET',
+                success: function(response) {
+                    $('#cart-count').text(response.cartCount);
+                }
+            });
+        }
+
+        function initializePriceSlider() {
+            // Initialize nouislider for price range
+            if (typeof noUiSlider !== 'undefined') {
+                var priceSlider = document.getElementById('price-slider');
+                if (priceSlider && !priceSlider.noUiSlider) {
+                    var minPrice = @(ViewBag.MinPrice ?? 0);
+                    var maxPrice = @(ViewBag.MaxPrice ?? 500000);
+
+                    noUiSlider.create(priceSlider, {
+                        start: [minPrice, maxPrice],
+                        connect: true,
+                        range: {
+                            'min': 0,
+                            'max': 500000
+                        },
+                        step: 1000,
+                        format: {
+                            to: function (value) {
+                                return Math.round(value);
+                            },
+                            from: function (value) {
+                                return Number(value);
+                            }
+                        }
+                    });
+
+                    // Update input fields when slider changes
+                    priceSlider.noUiSlider.on('update', function (values, handle) {
+                        $('#price-min').val(values[0]);
+                        $('#price-max').val(values[1]);
+                    });
+
+                    // Update slider when input fields change
+                    $('#price-min, #price-max').on('change', function() {
+                        var minVal = parseInt($('#price-min').val()) || 0;
+                        var maxVal = parseInt($('#price-max').val()) || 500000;
+                        if (priceSlider.noUiSlider) {
+                            priceSlider.noUiSlider.set([minVal, maxVal]);
+                        }
+                    });
+
+                    // Set initial values
+                    $('#price-min').val(minPrice);
+                    $('#price-max').val(maxPrice);
+                }
+            }
+        }
+
+        function initializeFilters() {
+            // Category filter
+            $('input[name="category-filter"]').on('change', function() {
+                applyFilters();
+            });
+
+            // Brand filter
+            $('input[name="brand-filter"]').on('change', function() {
+                applyFilters();
+            });
+        }
+
+        function initializeViewToggle() {
+            $('.store-grid li').on('click', function() {
+                $('.store-grid li').removeClass('active');
+                $(this).addClass('active');
+
+                var viewType = $(this).find('i').hasClass('fa-th') ? 'grid' : 'list';
+
+                if (viewType === 'list') {
+                    // Switch to list view - make products full width
+                    $('.product').removeClass('col-md-4 col-xs-6').addClass('col-md-12');
+                    $('.product .product-body').addClass('d-flex align-items-center');
+                    $('.product .product-img').addClass('me-4').css('flex', '0 0 200px');
+                    $('.product .product-body .product-name').addClass('mb-0');
+                    $('.product .add-to-cart').addClass('ms-auto');
+                } else {
+                    // Switch to grid view
+                    $('.product').removeClass('col-md-12').addClass('col-md-4 col-xs-6');
+                    $('.product .product-body').removeClass('d-flex align-items-center');
+                    $('.product .product-img').removeClass('me-4').css('flex', '');
+                    $('.product .product-body .product-name').removeClass('mb-0');
+                    $('.product .add-to-cart').removeClass('ms-auto');
+                }
+            });
+        }
+
+        function initializeSort() {
+            $('.input-select').on('change', function() {
+                var sortValue = $(this).val();
+                applyFilters();
+            });
+        }
+
+        function applyFilters() {
+            var searchTerm = '@ViewBag.SearchTerm';
+            var categoryId = $('input[name="category-filter"]:checked').val();
+            var brand = $('input[name="brand-filter"]:checked').val();
+            var minPrice = $('#price-min').val();
+            var maxPrice = $('#price-max').val();
+            var sortBy = $('.input-select').val();
+
+            var url = '/Product/Index?';
+            var params = [];
+
+            if (searchTerm) params.push('searchTerm=' + encodeURIComponent(searchTerm));
+            if (categoryId) params.push('categoryId=' + categoryId);
+            if (brand) params.push('brand=' + encodeURIComponent(brand));
+            if (minPrice && minPrice != '0') params.push('minPrice=' + minPrice);
+            if (maxPrice && maxPrice != '500000') params.push('maxPrice=' + maxPrice);
+            if (sortBy && sortBy != '0') params.push('sortBy=' + sortBy);
+
+            url += params.join('&');
+
+            // Reload page with filters
+            window.location.href = url;
+        }
+    </script>
+}

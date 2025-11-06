@@ -1,0 +1,207 @@
+@model TP2.ViewModels.AdminDashboardViewModel
+
+@{
+    ViewData["Title"] = "Admin Dashboard - Tunis Motors";
+}
+
+<!-- BREADCRUMB -->
+<div id="breadcrumb" class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="breadcrumb-header">Admin Dashboard</h3>
+                <ul class="breadcrumb-tree">
+                    <li><a href="/">Home</a></li>
+                    <li class="active">Dashboard</li>
+                </ul>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /BREADCRUMB -->
+
+<!-- SECTION -->
+<div class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card shadow h-100">
+                        <div class="card-body text-center">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <i class="fa fa-car fa-3x text-primary me-3"></i>
+                                <div class="text-start">
+                                    <h2 class="mb-0">@Model.TotalListings</h2>
+                                    <p class="text-muted mb-0">Total Listings</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card shadow h-100">
+                        <div class="card-body text-center">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <i class="fa fa-clock fa-3x text-warning me-3"></i>
+                                <div class="text-start">
+                                    <h2 class="mb-0">@Model.PendingApprovals</h2>
+                                    <p class="text-muted mb-0">Pending Approvals</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card shadow h-100">
+                        <div class="card-body text-center">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <i class="fa fa-users fa-3x text-success me-3"></i>
+                                <div class="text-start">
+                                    <h2 class="mb-0">@Model.TotalUsers</h2>
+                                    <p class="text-muted mb-0">Total Users</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card shadow h-100">
+                        <div class="card-body text-center">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <i class="fa fa-shopping-cart fa-3x text-info me-3"></i>
+                                <div class="text-start">
+                                    <h2 class="mb-0">@Model.TotalOrders</h2>
+                                    <p class="text-muted mb-0">Total Orders</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fa fa-bolt me-2"></i>Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <a asp-controller="Approval" asp-action="Index" class="btn btn-warning w-100">
+                                        <i class="fa fa-check-circle me-2"></i>Review Approvals (@Model.PendingApprovals)
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <a asp-action="Users" class="btn btn-primary w-100">
+                                        <i class="fa fa-users me-2"></i>Manage Users
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <a asp-action="Analytics" class="btn btn-info w-100">
+                                        <i class="fa fa-chart-bar me-2"></i>View Analytics
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <a asp-controller="Admin" asp-action="ListRoles" class="btn btn-secondary w-100">
+                                        <i class="fa fa-user-cog me-2"></i>Manage Roles
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="row">
+                <!-- Recent Listings -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow">
+                        <div class="card-header bg-dark text-white">
+                            <h5 class="mb-0"><i class="fa fa-car me-2"></i>Recent Car Listings</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.RecentListings.Any())
+                            {
+                                foreach (var listing in Model.RecentListings)
+                                {
+                                    <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">@listing.Name</h6>
+                                            <small class="text-muted">@listing.Seller?.UserName • @listing.CreatedAt.ToString("MMM dd, yyyy")</small>
+                                        </div>
+                                        <div class="text-end">
+                                            @if (listing.IsApproved)
+                                            {
+                                                <span class="badge bg-success">Approved</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning text-dark">Pending</span>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="text-center py-4">
+                                    <i class="fa fa-car fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted mb-0">No recent listings</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Orders -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fa fa-shopping-cart me-2"></i>Recent Orders</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.RecentOrders.Any())
+                            {
+                                foreach (var order in Model.RecentOrders)
+                                {
+                                    <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Order #@order.Id</h6>
+                                            <small class="text-muted">@order.CustomerName • @order.OrderDate.ToString("MMM dd, yyyy")</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="h6 text-success mb-0">@order.TotalAmount.ToString("N0") TND</span>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="text-center py-4">
+                                    <i class="fa fa-shopping-cart fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted mb-0">No recent orders</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /SECTION -->

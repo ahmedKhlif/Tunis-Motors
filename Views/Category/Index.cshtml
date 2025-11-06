@@ -1,0 +1,236 @@
+@model IEnumerable<TP2.Models.Category>
+
+@{
+    ViewData["Title"] = "Category Management - Tunis Motors";
+}
+
+<!-- BREADCRUMB -->
+<div id="breadcrumb" class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="breadcrumb-header">Category Management</h3>
+                <ul class="breadcrumb-tree">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/Dashboard">Dashboard</a></li>
+                    <li class="active">Categories</li>
+                </ul>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /BREADCRUMB -->
+
+<!-- SECTION -->
+<div class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <!-- Create Category Form -->
+            <div class="col-12 mb-4">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fa fa-plus me-2"></i>Add New Category</h5>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="Create" method="post" enctype="multipart/form-data" class="row g-3">
+                            <div class="col-md-6">
+                                <label for="CategoryName" class="form-label">Category Name</label>
+                                <input type="text" class="form-control" id="CategoryName" name="CategoryName" placeholder="Enter category name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="ImageFile" class="form-label">Category Image</label>
+                                <input type="file" class="form-control" id="ImageFile" name="ImageFile" accept=".jpg,.jpeg,.png,.gif">
+                                <small class="form-text text-muted">Optional: Upload an image (max 5MB)</small>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fa fa-save me-2"></i>Create Category
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Grid -->
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="fa fa-tags me-2"></i>All Categories (@Model.Count())</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- View Toggle -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <small class="text-muted">View: </small>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" class="btn btn-outline-primary active" id="cardViewBtn">
+                                        <i class="fa fa-th"></i> Cards
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary" id="listViewBtn">
+                                        <i class="fa fa-list"></i> List
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <small class="text-muted">@Model.Count() categories</small>
+                            </div>
+                        </div>
+
+                        @if (Model.Any())
+                        {
+                            <!-- Card View -->
+                            <div id="cardView" class="row">
+                                @foreach (var category in Model)
+                                {
+                                    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                                        <div class="card h-100 border-0 shadow-sm">
+                                            <div class="card-body text-center">
+                                                <div class="mb-3">
+                                                    @if (!string.IsNullOrEmpty(category.Image))
+                                                    {
+                                                        <img src="@category.Image" alt="@category.CategoryName" class="img-fluid rounded" style="max-height: 100px; object-fit: cover; width: 100%;" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="fa fa-tag fa-3x text-primary"></i>
+                                                    }
+                                                </div>
+                                                <h5 class="card-title mb-2">@category.CategoryName</h5>
+                                                <p class="text-muted small mb-3">@(category.CarListings?.Count ?? 0) cars</p>
+                                                <div class="btn-group w-100" role="group">
+                                                    <a asp-action="Edit" asp-route-id="@category.CategoryId" class="btn btn-outline-primary btn-sm">
+                                                        <i class="fa fa-edit"></i> Edit
+                                                    </a>
+                                                    <a asp-action="Details" asp-route-id="@category.CategoryId" class="btn btn-outline-info btn-sm">
+                                                        <i class="fa fa-eye"></i> View
+                                                    </a>
+                                                    <a asp-action="Delete" asp-route-id="@category.CategoryId" class="btn btn-outline-danger btn-sm">
+                                                        <i class="fa fa-trash"></i> Delete
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- List View -->
+                            <div id="listView" class="d-none">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th width="80">Image</th>
+                                                <th>Category Name</th>
+                                                <th>Cars Count</th>
+                                                <th width="200">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var category in Model)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        @if (!string.IsNullOrEmpty(category.Image))
+                                                        {
+                                                            <img src="@category.Image" alt="@category.CategoryName" class="rounded" style="width: 60px; height: 40px; object-fit: cover;" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="fa fa-tag fa-2x text-primary"></i>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <strong>@category.CategoryName</strong>
+                                                        <br />
+                                                        <small class="text-muted">ID: @category.CategoryId</small>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-success">@(category.CarListings?.Count ?? 0)</span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group btn-group-sm" role="group">
+                                                            <a asp-action="Edit" asp-route-id="@category.CategoryId" class="btn btn-outline-primary">
+                                                                <i class="fa fa-edit"></i>
+                                                            </a>
+                                                            <a asp-action="Details" asp-route-id="@category.CategoryId" class="btn btn-outline-info">
+                                                                <i class="fa fa-eye"></i>
+                                                            </a>
+                                                            <a asp-action="Delete" asp-route-id="@category.CategoryId" class="btn btn-outline-danger">
+                                                                <i class="fa fa-trash"></i>
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fa fa-tags fa-4x text-muted mb-4"></i>
+                                <h4 class="text-muted">No Categories Found</h4>
+                                <p class="text-muted">Start by creating your first category above.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /SECTION -->
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // View toggle functionality
+            $('#cardViewBtn').click(function() {
+                $('#cardView').removeClass('d-none');
+                $('#listView').addClass('d-none');
+                $('#cardViewBtn').addClass('active');
+                $('#listViewBtn').removeClass('active');
+            });
+
+            $('#listViewBtn').click(function() {
+                $('#cardView').addClass('d-none');
+                $('#listView').removeClass('d-none');
+                $('#listViewBtn').addClass('active');
+                $('#cardViewBtn').removeClass('active');
+            });
+
+            // Add success message handling
+            @if (TempData["Success"] != null)
+            {
+                <text>
+                showNotification('@TempData["Success"]', 'success');
+                </text>
+            }
+        });
+
+        function showNotification(message, type) {
+            var notification = $('<div class="alert alert-' + (type === 'success' ? 'success' : 'danger') + ' alert-dismissible fade show notification-toast" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">' +
+                message +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                '</div>');
+
+            $('body').append(notification);
+
+            setTimeout(function() {
+                notification.alert('close');
+            }, 3000);
+        }
+    </script>
+}
