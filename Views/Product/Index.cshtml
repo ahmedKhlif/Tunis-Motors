@@ -130,6 +130,14 @@
                                             {
                                                 <span class="sale">PENDING</span>
                                             }
+                                            @if (car.QuantityInStock == 0)
+                                            {
+                                                <span class="out">SOLD OUT</span>
+                                            }
+                                            else if (car.QuantityInStock <= 2)
+                                            {
+                                                <span class="sale">ONLY @car.QuantityInStock LEFT</span>
+                                            }
                                         </div>
                                     </div>
                                     <div class="product-body">
@@ -171,9 +179,18 @@
                                     <div class="add-to-cart">
                                         @if (User.Identity.IsAuthenticated)
                                         {
-                                            <button class="add-to-cart-btn" onclick="addToCart(@car.ProductId)">
-                                                <i class="fa fa-shopping-cart"></i> add to cart
-                                            </button>
+                                            @if (car.QuantityInStock > 0)
+                                            {
+                                                <button class="add-to-cart-btn" onclick="addToCart(@car.ProductId)">
+                                                    <i class="fa fa-shopping-cart"></i> add to cart
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button class="add-to-cart-btn disabled" disabled>
+                                                    <i class="fa fa-times-circle"></i> sold out
+                                                </button>
+                                            }
                                         }
                                         else
                                         {

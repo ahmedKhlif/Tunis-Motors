@@ -1,0 +1,431 @@
+@model TP2.Models.Order
+
+@{
+    ViewData["Title"] = $"Order #@Model.Id - Tunis Motors";
+}
+
+<!-- BREADCRUMB -->
+<div id="breadcrumb" class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="breadcrumb-header">Order #@Model.Id</h3>
+                <ul class="breadcrumb-tree">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/Dashboard">Dashboard</a></li>
+                    <li><a href="/Order">Orders</a></li>
+                    <li class="active">Order #@Model.Id</li>
+                </ul>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /BREADCRUMB -->
+
+<!-- SECTION -->
+<div class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <!-- Order Details -->
+            <div class="col-lg-8 mb-4">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0"><i class="fa fa-shopping-bag me-2"></i>Order #@Model.Id</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Success/Error Messages -->
+                        @if (TempData["Success"] != null)
+                        {
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                @TempData["Success"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        }
+
+                        @if (TempData["Error"] != null)
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                @TempData["Error"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        }
+
+                        <!-- Order Info -->
+                        <div class="row mb-4">
+                            <div class="col-sm-6">
+                                <h5 class="text-primary">Order Information</h5>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Order ID:</strong></td>
+                                        <td>@Model.Id</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Order Date:</strong></td>
+                                        <td>@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Status:</strong></td>
+                                        <td>
+                                            <span class="badge bg-@Model.StatusColor fs-6">
+                                                @if (Model.Status == OrderStatus.Cancelled || Model.Status == OrderStatus.Refunded)
+                                                {
+                                                    <i class="fa fa-exclamation-triangle me-1"></i>
+                                                }
+                                                @Model.StatusDisplay
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    @if (Model.StatusUpdatedAt.HasValue)
+                                    {
+                                        <tr>
+                                            <td><strong>Last Updated:</strong></td>
+                                            <td>@Model.StatusUpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Updated By:</strong></td>
+                                            <td>@Model.StatusUpdatedBy</td>
+                                        </tr>
+                                    }
+                                </table>
+                            </div>
+                            <div class="col-sm-6">
+                                <h5 class="text-primary">Customer Information</h5>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Name:</strong></td>
+                                        <td>@Model.CustomerName</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Email:</strong></td>
+                                        <td>@Model.Email</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Payment:</strong></td>
+                                        <td>
+                                            @switch (Model.PaymentMethod)
+                                            {
+                                                case "CreditCard":
+                                                    <span><i class="fa fa-credit-card me-1"></i>Credit Card</span>
+                                                    break;
+                                                case "Paypal":
+                                                    <span><i class="fab fa-paypal me-1"></i>PayPal</span>
+                                                    break;
+                                                case "BankTransfer":
+                                                    <span><i class="fa fa-university me-1"></i>Bank Transfer</span>
+                                                    break;
+                                                case "CashOnDelivery":
+                                                    <span><i class="fa fa-money-bill-wave me-1"></i>Cash on Delivery</span>
+                                                    break;
+                                                default:
+                                                    <span>@Model.PaymentMethod</span>
+                                                    break;
+                                            }
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Shipping Address -->
+                        <div class="mb-4">
+                            <h5 class="text-primary">Shipping Address</h5>
+                            <div class="border p-3 rounded">
+                                @Model.Address
+                            </div>
+                        </div>
+
+                        <!-- Order Items -->
+                        <h5 class="text-primary mb-3">Order Items</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@item.ProductName</strong>
+                                            </td>
+                                            <td>@item.Quantity</td>
+                                            <td>@item.Price.ToString("N0") TND</td>
+                                            <td><strong>@((item.Quantity * item.Price).ToString("N0")) TND</strong></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot class="table-dark">
+                                    <tr>
+                                        <td colspan="3" class="text-end"><strong>Total Amount:</strong></td>
+                                        <td><strong class="text-success">@Model.TotalAmount.ToString("N0") TND</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Notes -->
+                        @if (!string.IsNullOrEmpty(Model.Notes))
+                        {
+                            <div class="mt-4">
+                                <h5 class="text-primary">Notes</h5>
+                                <div class="border p-3 rounded bg-light">
+                                    @Model.Notes
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Quick Actions -->
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h6 class="mb-0"><i class="fa fa-bolt me-2"></i>Quick Actions</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fa fa-arrow-left me-2"></i>Back to Orders
+                            </a>
+
+                            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                            {
+                                @if (Model.CanBeUpdated)
+                                {
+                                    <button type="button" class="btn btn-warning"
+                                            onclick="openStatusModal('@Model.Status')">
+                                        <i class="fa fa-edit me-2"></i>Update Status
+                                    </button>
+                                }
+
+                                @if (Model.CanBeCancelled)
+                                {
+                                    <button type="button" class="btn btn-danger"
+                                            onclick="openCancelModal()">
+                                        <i class="fa fa-times me-2"></i>Cancel Order
+                                    </button>
+                                }
+                            }
+                            else if (Model.UserId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+                            {
+                                @if (Model.CanBeCancelled)
+                                {
+                                    <button type="button" class="btn btn-danger"
+                                            onclick="openCancelModal()">
+                                        <i class="fa fa-times me-2"></i>Cancel Order
+                                    </button>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Status Timeline -->
+                <div class="card shadow">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="fa fa-history me-2"></i>Status Timeline</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <div class="timeline-item @(Model.Status >= OrderStatus.Pending ? "active" : "")">
+                                <div class="timeline-marker bg-warning"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-0">Order Placed</h6>
+                                    <small class="text-muted">@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</small>
+                                </div>
+                            </div>
+
+                            <div class="timeline-item @(Model.Status >= OrderStatus.Confirmed ? "active" : "")">
+                                <div class="timeline-marker bg-info"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-0">Confirmed</h6>
+                                    <small class="text-muted">Order confirmed by admin</small>
+                                </div>
+                            </div>
+
+                            <div class="timeline-item @(Model.Status >= OrderStatus.Processing ? "active" : "")">
+                                <div class="timeline-marker bg-primary"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-0">Processing</h6>
+                                    <small class="text-muted">Order is being prepared</small>
+                                </div>
+                            </div>
+
+                            <div class="timeline-item @(Model.Status >= OrderStatus.Shipped ? "active" : "")">
+                                <div class="timeline-marker bg-success"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-0">Shipped</h6>
+                                    <small class="text-muted">Order has been shipped</small>
+                                </div>
+                            </div>
+
+                            <div class="timeline-item @(Model.Status >= OrderStatus.Delivered ? "active" : "")">
+                                <div class="timeline-marker bg-success"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-0">Delivered</h6>
+                                    <small class="text-muted">Order delivered successfully</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /SECTION -->
+
+<!-- Status Update Modal -->
+@if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+{
+    <div class="modal fade" id="statusModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Order Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form asp-action="UpdateStatus" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="newStatus" class="form-label">New Status</label>
+                            <select class="form-select" id="newStatus" name="newStatus" required>
+                                <option value="Pending" selected="@(Model.Status == OrderStatus.Pending)">Pending</option>
+                                <option value="Confirmed" selected="@(Model.Status == OrderStatus.Confirmed)">Confirmed</option>
+                                <option value="Processing" selected="@(Model.Status == OrderStatus.Processing)">Processing</option>
+                                <option value="Shipped" selected="@(Model.Status == OrderStatus.Shipped)">Shipped</option>
+                                <option value="Delivered" selected="@(Model.Status == OrderStatus.Delivered)">Delivered</option>
+                                <option value="Cancelled" selected="@(Model.Status == OrderStatus.Cancelled)">Cancelled</option>
+                                <option value="Refunded" selected="@(Model.Status == OrderStatus.Refunded)">Refunded</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notes (Optional)</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3"
+                                      placeholder="Add any notes about this status change...">@Model.Notes</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Status</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Cancel Order Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cancel Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="Cancel" asp-route-id="@Model.Id" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fa fa-exclamation-triangle me-2"></i>
+                        Are you sure you want to cancel this order? This action cannot be undone.
+                    </div>
+                    <div class="mb-3">
+                        <label for="cancelReason" class="form-label">Reason for Cancellation (Optional)</label>
+                        <textarea class="form-control" id="cancelReason" name="reason" rows="3"
+                                  placeholder="Please provide a reason for cancelling this order..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Order</button>
+                    <button type="submit" class="btn btn-danger">Cancel Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openStatusModal(currentStatus) {
+            var modal = new bootstrap.Modal(document.getElementById('statusModal'));
+            modal.show();
+        }
+
+        function openCancelModal() {
+            var modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+            modal.show();
+        }
+    </script>
+}
+
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e9ecef;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .timeline-item.active {
+        opacity: 1;
+    }
+
+    .timeline-item .timeline-marker {
+        position: absolute;
+        left: -22px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        background: #6c757d;
+    }
+
+    .timeline-item.active .timeline-marker {
+        background: currentColor;
+    }
+
+    .timeline-item .timeline-content {
+        background: #f8f9fa;
+        padding: 10px 15px;
+        border-radius: 4px;
+        border-left: 3px solid currentColor;
+    }
+
+    .timeline-item.active .timeline-content {
+        background: #fff;
+        border-color: currentColor;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+</style>

@@ -2,6 +2,24 @@
 
 A comprehensive ASP.NET Core MVC application for buying and selling cars online in Tunisia. This platform provides a complete e-commerce solution with user management, product listings, shopping cart, wishlist functionality, and administrative controls, specifically tailored for the Tunisian automotive market.
 
+## 🎉 Latest Updates (v1.1.0)
+
+### ✨ New Features
+- **Order Status Timeline**: Users can now track complete order progress with visual timeline
+- **Admin Order Notes**: Administrators can add notes when updating order status for customer communication
+- **Category Image Support**: Categories now support optional image uploads for better visual organization
+- **Enhanced Order Management**: Complete order lifecycle with status tracking and audit trails
+- **Payment Method Display**: Proper display and validation of payment methods throughout the system
+- **Real-time Status Updates**: Order status changes are immediately reflected across all user views
+
+### 🔧 Improvements
+- **Order Synchronization**: Fixed status display issues between admin and user views
+- **Cart Count Updates**: Improved real-time cart count functionality
+- **Font Awesome Icons**: Updated all icons to Font Awesome 4 compatibility
+- **Navbar Responsiveness**: Fixed navigation display issues
+- **User-Friendly Notifications**: Enhanced notification styles for wishlist and cart actions
+- **Role-Based Functionality**: Verified and improved all role-based features
+
 ## 🚗 Features
 
 ### User Features
@@ -21,16 +39,20 @@ A comprehensive ASP.NET Core MVC application for buying and selling cars online 
 - **Dashboard Analytics** - Overview of platform statistics
 - **User Management** - Manage user accounts and roles
 - **Category Management** - Create and manage car categories with images
+- **Order Management** - Complete order lifecycle management with status updates and notes
 - **Approval System** - Review and approve/reject car listings
 - **Role Management** - Assign and manage user roles (Admin, Manager, Seller)
+- **Communication System** - Add notes to orders for customer communication
 
 ### Technical Features
 - **Responsive Design** - Mobile-friendly interface using Bootstrap 5
 - **Real-time Updates** - AJAX-powered cart and wishlist updates
 - **Advanced Filtering** - Price range slider, category/brand filters, sorting
-- **File Upload** - Image upload for products and categories
+- **File Upload** - Image upload for products, categories, and user profiles
+- **Order Status Tracking** - Complete order lifecycle with timeline and notes
 - **Email Notifications** - Order confirmations and system notifications
 - **Security** - CSRF protection, input validation, role-based authorization
+- **Admin Communication** - Notes system for admin-customer communication
 
 ## 🛠️ Technologies Used
 
@@ -158,8 +180,10 @@ dotnet run
 - Advanced filtering (price, category, brand)
 - Add items to cart and wishlist
 - Complete purchase process with checkout
-- View detailed order history
+- View detailed order history with status timeline
+- Track order progress and admin communications
 - Manage personal profile information
+- Cancel orders when eligible
 
 ## 🗄️ Database Schema
 
@@ -272,6 +296,16 @@ For support and questions:
 - Check the documentation for common solutions
 
 ## 🔄 Version History
+
+### v1.1.0 (Latest)
+- **Order Status Timeline**: Complete order tracking with visual timeline
+- **Admin Order Notes**: Communication system between admins and customers
+- **Category Images**: Optional image uploads for categories
+- **Enhanced Order Management**: Status synchronization and audit trails
+- **Payment Method Improvements**: Better display and validation
+- **UI/UX Enhancements**: Improved notifications and responsive design
+- **Font Awesome Updates**: Compatibility with Font Awesome 4
+- **Real-time Updates**: Improved cart and wishlist functionality
 
 ### v1.0.0
 - Initial release

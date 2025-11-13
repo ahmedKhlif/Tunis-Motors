@@ -17,6 +17,10 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     options.Password.RequireUppercase = false;
     options.Password.RequireLowercase = false;
     options.Password.RequiredLength = 6;
+
+    // Enable email confirmation
+    options.SignIn.RequireConfirmedEmail = true;
+    options.User.RequireUniqueEmail = true;
 }).AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
 
 builder.Services.Configure<IdentityOptions>(options =>
@@ -29,6 +33,10 @@ builder.Services.Configure<IdentityOptions>(options =>
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
+// Register payment and email services
+builder.Services.AddScoped<TP2.Services.IPaymentService, TP2.Services.StripePaymentService>();
+builder.Services.AddScoped<TP2.Services.IEmailService, TP2.Services.EmailService>();
 
 var app = builder.Build();
 

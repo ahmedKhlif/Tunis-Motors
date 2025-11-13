@@ -1,0 +1,229 @@
+@model IEnumerable<TP2.Models.Order>
+
+@{
+    ViewData["Title"] = "My Orders - Tunis Motors";
+}
+
+<!-- BREADCRUMB -->
+<div id="breadcrumb" class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="breadcrumb-header">My Orders</h3>
+                <ul class="breadcrumb-tree">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/Profile">Profile</a></li>
+                    <li class="active">My Orders</li>
+                </ul>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /BREADCRUMB -->
+
+<!-- SECTION -->
+<div class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fa fa-shopping-bag me-2"></i>My Order History (@Model.Count())</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Any())
+                        {
+                            <div class="row">
+                                @foreach (var order in Model)
+                                {
+                                    <div class="col-lg-6 mb-4">
+                                        <div class="card h-100 border-0 shadow-sm">
+                                            <div class="card-header d-flex justify-content-between align-items-center">
+                                                <h6 class="mb-0">
+                                                    <i class="fa fa-shopping-bag me-2"></i>
+                                                    Order #@order.Id
+                                                </h6>
+                                                <span class="badge bg-@order.StatusColor">
+                                                    @if (order.Status == OrderStatus.Cancelled || order.Status == OrderStatus.Refunded)
+                                                    {
+                                                        <i class="fa fa-exclamation-triangle me-1"></i>
+                                                    }
+                                                    @order.StatusDisplay
+                                                </span>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row mb-3">
+                                                    <div class="col-6">
+                                                        <small class="text-muted">Order Date</small>
+                                                        <br />
+                                                        <strong>@order.OrderDate.ToString("dd/MM/yyyy")</strong>
+                                                        <br />
+                                                        <small class="text-muted">@order.OrderDate.ToString("HH:mm")</small>
+                                                        @if (order.StatusUpdatedAt.HasValue && order.StatusUpdatedBy != null)
+                                                        {
+                                                            <br />
+                                                            <small class="text-info">
+                                                                <i class="fa fa-clock me-1"></i>
+                                                                Updated @order.StatusUpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                                            </small>
+                                                        }
+                                                    </div>
+                                                    <div class="col-6 text-end">
+                                                        <small class="text-muted">Total Amount</small>
+                                                        <br />
+                                                        @if (order.Status == OrderStatus.Cancelled || order.Status == OrderStatus.Refunded)
+                                                        {
+                                                            <strong class="text-muted h5"><del>@order.TotalAmount.ToString("N0") TND</del></strong>
+                                                        }
+                                                        else
+                                                        {
+                                                            <strong class="text-primary h5">@order.TotalAmount.ToString("N0") TND</strong>
+                                                        }
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <small class="text-muted">Items (@order.Items.Count)</small>
+                                                    <div class="order-items-preview">
+                                                        @foreach (var item in order.Items.Take(2))
+                                                        {
+                                                            <div class="d-flex justify-content-between align-items-center py-1">
+                                                                <span class="text-truncate">@item.ProductName</span>
+                                                                <small class="text-muted">x@item.Quantity</small>
+                                                            </div>
+                                                        }
+                                                        @if (order.Items.Count > 2)
+                                                        {
+                                                            <small class="text-muted">... and @(order.Items.Count - 2) more items</small>
+                                                        }
+                                                    </div>
+                                                </div>
+
+                                                <div class="d-flex gap-2">
+                                                    <a asp-action="Details" asp-route-id="@order.Id"
+                                                       class="btn btn-outline-primary btn-sm flex-fill">
+                                                        <i class="fa fa-eye me-1"></i>View Details
+                                                    </a>
+                                                    @if (order.Status == OrderStatus.Cancelled || order.Status == OrderStatus.Refunded)
+                                                    {
+                                                        <span class="text-muted small">
+                                                            <i class="fa fa-ban me-1"></i>
+                                                            @if (order.Status == OrderStatus.Cancelled) { <span>Order Cancelled</span> }
+                                                            else { <span>Order Refunded</span> }
+                                                        </span>
+                                                    }
+                                                    else if (order.CanBeCancelled)
+                                                    {
+                                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                                                onclick="openCancelModal(@order.Id)">
+                                                            <i class="fa fa-times me-1"></i>Cancel
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fa fa-shopping-bag fa-4x text-muted mb-4"></i>
+                                <h4 class="text-muted">No Orders Yet</h4>
+                                <p class="text-muted mb-4">You haven't placed any orders yet. Start shopping to see your orders here!</p>
+                                <a href="/Product" class="btn btn-primary">
+                                    <i class="fa fa-car me-2"></i>Browse Cars
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /SECTION -->
+
+<!-- Cancel Order Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cancel Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="cancelForm" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="cancelOrderId" name="id" />
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fa fa-exclamation-triangle me-2"></i>
+                        Are you sure you want to cancel this order? This action cannot be undone.
+                    </div>
+                    <div class="mb-3">
+                        <label for="cancelReason" class="form-label">Reason for Cancellation (Optional)</label>
+                        <textarea class="form-control" id="cancelReason" name="reason" rows="3"
+                                  placeholder="Please provide a reason for cancelling this order..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Order</button>
+                    <button type="submit" class="btn btn-danger">Cancel Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openCancelModal(orderId) {
+            document.getElementById('cancelOrderId').value = orderId;
+            document.getElementById('cancelReason').value = '';
+            document.getElementById('cancelForm').action = '/Order/Cancel/' + orderId;
+
+            var modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+            modal.show();
+        }
+
+        // Show success/error messages
+        @if (TempData["Success"] != null)
+        {
+            <text>
+            $(document).ready(function() {
+                // You could add a toast notification here
+                console.log('Success: @TempData["Success"]');
+            });
+            </text>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <text>
+            $(document).ready(function() {
+                console.log('Error: @TempData["Error"]');
+            });
+            </text>
+        }
+    </script>
+}
+
+<style>
+    .order-items-preview {
+        max-height: 60px;
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+</style>

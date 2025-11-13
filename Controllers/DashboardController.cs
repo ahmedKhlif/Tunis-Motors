@@ -93,6 +93,9 @@ namespace TP2.Controllers
             foreach (var user in users)
             {
                 var roles = _userManager.GetRolesAsync(user).Result;
+                var lockoutEnd = _userManager.GetLockoutEndDateAsync(user).Result;
+                var isLocked = lockoutEnd.HasValue && lockoutEnd.Value > DateTimeOffset.Now;
+
                 userList.Add(new UserManagementViewModel
                 {
                     Id = user.Id,
@@ -100,7 +103,7 @@ namespace TP2.Controllers
                     UserName = user.UserName,
                     Roles = string.Join(", ", roles),
                     EmailConfirmed = user.EmailConfirmed,
-                    LockoutEnabled = user.LockoutEnabled
+                    LockoutEnabled = isLocked
                 });
             }
 

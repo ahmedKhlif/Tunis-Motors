@@ -1,0 +1,855 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{abstract}
+
+% Code highlighting
+\lstset{
+    language=C#,
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny,
+    frame=single,
+    breaklines=true,
+    captionpos=b
+}
+
+% Page setup
+\geometry{margin=1in}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\leftmark}
+\fancyhead[R]{\thepage\ of \pageref{LastPage}}
+\fancyfoot[C]{\footnotesize Tunis Motors - Architecture Transformation}
+
+% Title page info
+\title{Tunis Motors: Architecture Transformation\\From Monolithic MVC to Microservices}
+\author{Ahmed Khlif}
+\date{\today}
+
+\begin{document}
+
+% Title page
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+% Table of contents
+\tableofcontents
+\newpage
+
+% Abstract
+\begin{abstract}
+This document outlines the comprehensive transformation of the Tunis Motors car e-commerce platform from a monolithic ASP.NET Core MVC application to a modern microservices architecture consisting of a REST API backend and a Blazor WebAssembly frontend. The transformation aims to improve scalability, maintainability, and development efficiency while preserving all existing functionality and adding new capabilities.
+\end{abstract}
+
+\newpage
+
+\section{Executive Summary}
+
+\subsection{Current State}
+The Tunis Motors application is currently implemented as a monolithic ASP.NET Core MVC application with the following characteristics:
+
+\begin{itemize}
+    \item Single codebase containing UI, business logic, and data access
+    \item Razor views for server-side rendering
+    \item Direct database access from controllers
+    \item Tight coupling between components
+    \item Limited scalability and deployment flexibility
+\end{itemize}
+
+\subsection{Proposed Architecture}
+The new architecture will consist of three main components:
+
+\begin{enumerate}
+    \item \textbf{Backend API}: ASP.NET Core Web API providing RESTful endpoints
+    \item \textbf{Frontend Application}: Blazor WebAssembly single-page application
+    \item \textbf{Shared Library}: Common models and DTOs used by both applications
+\end{enumerate}
+
+\subsection{Key Benefits}
+\begin{itemize}
+    \item \textbf{Scalability}: Independent deployment and scaling of frontend and backend
+    \item \textbf{Maintainability}: Clear separation of concerns and modular architecture
+    \item \textbf{Technology Flexibility}: API can serve multiple frontend clients
+    \item \textbf{Development Efficiency}: Parallel development of frontend and backend
+    \item \textbf{Testing}: Improved testability with clear API boundaries
+\end{itemize}
+
+\section{Current Architecture Analysis}
+
+\subsection{Application Structure}
+\begin{lstlisting}[caption=Current MVC Structure]
+TunisMotors/
+├── Controllers/          # MVC Controllers with mixed concerns
+├── Models/              # Domain models and database context
+├── Views/               # Razor views
+├── wwwroot/            # Static assets
+├── Services/           # Business logic (limited)
+└── Repositories/       # Data access layer
+\end{lstlisting}
+
+\subsection{Technology Stack}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Component & Technology \\
+\midrule
+Framework & ASP.NET Core 8.0 MVC \\
+UI Framework & Razor Views + Bootstrap 5 \\
+Database & SQL Server with Entity Framework Core \\
+Authentication & ASP.NET Core Identity \\
+Frontend & jQuery + AJAX \\
+Icons & Font Awesome 6 \\
+\bottomrule
+\end{tabular}
+
+\subsection{Pain Points}
+\begin{enumerate}
+    \item \textbf{Tight Coupling}: UI logic mixed with business logic
+    \item \textbf{Single Deployment Unit}: Cannot scale frontend and backend independently
+    \item \textbf{Limited Client Support}: Only supports web browsers
+    \item \textbf{Testing Complexity}: Difficult to test individual components
+    \item \textbf{Development Bottlenecks}: Frontend and backend changes require coordinated deployments
+\end{enumerate}
+
+\section{Proposed Architecture}
+
+\subsection{System Overview}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{architecture_diagram.png}
+    \caption{Proposed Microservices Architecture}
+\end{figure}
+
+\subsection{Component Breakdown}
+
+\subsubsection{Backend API (ASP.NET Core Web API)}
+\begin{itemize}
+    \item RESTful API endpoints for all business operations
+    \item JWT-based authentication and authorization
+    \item Swagger/OpenAPI documentation
+    \item CORS configuration for frontend communication
+    \item File upload handling for images
+    \item Background job processing for email notifications
+\end{itemize}
+
+\subsubsection{Frontend Application (Blazor WebAssembly)}
+\begin{itemize}
+    \item Component-based architecture
+    \item Client-side routing and state management
+    \item Real-time updates with SignalR (optional)
+    \item Progressive Web App (PWA) capabilities
+    \item Offline support for critical features
+    \item Responsive design with modern CSS frameworks
+\end{itemize}
+
+\subsubsection{Shared Components}
+\begin{itemize}
+    \item Common data transfer objects (DTOs)
+    \item Validation models and attributes
+    \item Enumeration types and constants
+    \item Shared business rules and utilities
+\end{itemize}
+
+\section{Detailed Implementation Plan}
+
+\subsection{Phase 1: Project Setup and Infrastructure}
+
+\subsubsection{1.1 Create Solution Structure}
+\begin{lstlisting}[caption=New Solution Structure]
+TunisMotors.Solution/
+├── TunisMotors.API/           # ASP.NET Core Web API
+│   ├── Controllers/
+│   ├── Models/
+│   ├── Services/
+│   ├── Data/
+│   ├── DTOs/
+│   └── appsettings.json
+├── TunisMotors.Frontend/      # Blazor WebAssembly
+│   ├── Pages/
+│   ├── Components/
+│   ├── Services/
+│   ├── Shared/
+│   └── wwwroot/
+├── TunisMotors.Shared/        # Shared DTOs/Models
+│   ├── DTOs/
+│   ├── Models/
+│   └── Enums/
+└── TunisMotors.sln
+\end{lstlisting}
+
+\subsubsection{1.2 Database Migration}
+\begin{itemize}
+    \item Keep existing database schema
+    \item Update connection strings for API project
+    \item Ensure Entity Framework migrations are compatible
+    \item Add any new tables required for API functionality
+\end{itemize}
+
+\subsection{Phase 2: Backend API Development}
+
+\subsubsection{2.1 Authentication and Authorization}
+\begin{lstlisting}[caption=API Authentication Setup]
+// Program.cs
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
+\end{lstlisting}
+
+\subsubsection{2.2 API Controllers Structure}
+\begin{lstlisting}[caption=Products API Controller]
+[ApiController]
+[Route("api/[controller]")]
+public class ProductsController : ControllerBase
+{
+    private readonly IProductService _productService;
+
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<ActionResult<PagedResult<ProductDto>>> GetProducts(
+        [FromQuery] ProductFilter filter,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 12)
+    {
+        var result = await _productService.GetProductsAsync(filter, page, pageSize);
+        return Ok(result);
+    }
+
+    [HttpGet("{id}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ProductDto>> GetProduct(int id)
+    {
+        var product = await _productService.GetProductByIdAsync(id);
+        if (product == null) return NotFound();
+        return Ok(product);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Seller,Admin")]
+    public async Task<ActionResult<ProductDto>> CreateProduct(
+        [FromForm] CreateProductRequest request)
+    {
+        var product = await _productService.CreateProductAsync(request, User);
+        return CreatedAtAction(nameof(GetProduct),
+            new { id = product.Id }, product);
+    }
+}
+\end{lstlisting}
+
+\subsubsection{2.3 Data Transfer Objects (DTOs)}
+\begin{lstlisting}[caption=Product DTOs]
+// Shared/TunisMotors.Shared/DTOs/ProductDto.cs
+public class ProductDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Brand { get; set; }
+    public decimal Price { get; set; }
+    public string ImageUrl { get; set; }
+    public string Condition { get; set; }
+    public int Year { get; set; }
+    public string FuelType { get; set; }
+    public string Transmission { get; set; }
+    public CategoryDto Category { get; set; }
+    public bool IsApproved { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+// Shared/TunisMotors.Shared/DTOs/CreateProductRequest.cs
+public class CreateProductRequest
+{
+    [Required, StringLength(100)]
+    public string Name { get; set; }
+
+    [Required, StringLength(50)]
+    public string Brand { get; set; }
+
+    [Required, Range(0, 1000000)]
+    public decimal Price { get; set; }
+
+    [Required]
+    public IFormFile Image { get; set; }
+
+    // ... other properties
+}
+\end{lstlisting}
+
+\subsection{Phase 3: Frontend Blazor Development}
+
+\subsubsection{3.1 Application Structure}
+\begin{lstlisting}[caption=Blazor App Structure]
+TunisMotors.Frontend/
+├── Pages/
+│   ├── Index.razor              # Home page
+│   ├── Products.razor           # Product listings
+│   ├── ProductDetails.razor     # Product details
+│   ├── Cart.razor               # Shopping cart
+│   ├── Checkout.razor           # Checkout process
+│   ├── Profile.razor            # User profile
+│   ├── Login.razor              # Authentication
+│   └── Admin/
+│       ├── Dashboard.razor
+│       ├── Categories.razor
+│       └── Users.razor
+├── Components/
+│   ├── Layout/
+│   │   ├── MainLayout.razor
+│   │   └── NavMenu.razor
+│   ├── ProductCard.razor
+│   ├── CategoryFilter.razor
+│   ├── ShoppingCart.razor
+│   └── Pagination.razor
+├── Services/
+│   ├── ApiService.cs
+│   ├── AuthService.cs
+│   ├── ProductService.cs
+│   ├── CartService.cs
+│   └── NotificationService.cs
+└── Shared/
+    ├── MainLayout.razor
+    └── RedirectToLogin.razor
+\end{lstlisting}
+
+\subsubsection{3.2 API Service Implementation}
+\begin{lstlisting}[caption=API Service in Blazor]
+// Services/ApiService.cs
+public class ApiService
+{
+    private readonly HttpClient _httpClient;
+    private readonly ILocalStorageService _localStorage;
+    private readonly AuthenticationStateProvider _authStateProvider;
+
+    public ApiService(
+        HttpClient httpClient,
+        ILocalStorageService localStorage,
+        AuthenticationStateProvider authStateProvider)
+    {
+        _httpClient = httpClient;
+        _localStorage = localStorage;
+        _authStateProvider = authStateProvider;
+
+        _httpClient.BaseAddress = new Uri("https://localhost:5001/api/");
+        _httpClient.DefaultRequestHeaders.Accept.Add(
+            new MediaTypeWithQualityHeaderValue("application/json"));
+    }
+
+    public async Task<T> GetAsync<T>(string endpoint)
+    {
+        await SetAuthorizationHeader();
+        var response = await _httpClient.GetAsync(endpoint);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<T>();
+    }
+
+    public async Task<T> PostAsync<T>(string endpoint, object data)
+    {
+        await SetAuthorizationHeader();
+        var response = await _httpClient.PostAsJsonAsync(endpoint, data);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<T>();
+    }
+
+    private async Task SetAuthorizationHeader()
+    {
+        var token = await _localStorage.GetItemAsync<string>("authToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+        }
+    }
+}
+\end{lstlisting}
+
+\subsubsection{3.3 Product Listing Component}
+\begin{lstlisting}[caption=Products Page in Blazor]
+@page "/products"
+@inject IProductService ProductService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Car Listings - Tunis Motors</PageTitle>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <CategoryFilter @bind-Categories="selectedCategories"
+                                  @bind-CategoriesChanged="OnCategoriesChanged" />
+
+                    <PriceRangeFilter @bind-MinPrice="minPrice"
+                                    @bind-MaxPrice="maxPrice"
+                                    @bind-PriceChanged="OnPriceChanged" />
+
+                    <BrandFilter @bind-Brands="selectedBrands"
+                               @bind-BrandsChanged="OnBrandsChanged" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Car Listings</h2>
+                <div class="d-flex gap-2">
+                    <MudButton Variant="Variant.Outlined"
+                             StartIcon="@Icons.Material.Filled.GridView"
+                             @onclick="() => viewMode = ViewMode.Grid"
+                             Color="viewMode == ViewMode.Grid ? Color.Primary : Color.Default">
+                        Grid
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined"
+                             StartIcon="@Icons.Material.Filled.List"
+                             @onclick="() => viewMode = ViewMode.List"
+                             Color="viewMode == ViewMode.List ? Color.Primary : Color.Default">
+                        List
+                    </MudButton>
+                </div>
+            </div>
+
+            @if (loading)
+            {
+                <div class="text-center py-5">
+                    <MudProgressCircular Size="Size.Large" Indeterminate="true" />
+                    <p class="mt-3">Loading cars...</p>
+                </div>
+            }
+            else if (products == null || !products.Any())
+            {
+                <div class="text-center py-5">
+                    <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" />
+                    <h4 class="mt-3">No cars found</h4>
+                    <p>Try adjusting your filters</p>
+                </div>
+            }
+            else
+            {
+                if (viewMode == ViewMode.Grid)
+                {
+                    <div class="row">
+                        @foreach (var product in products)
+                        {
+                            <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                                <ProductCard Product="product"
+                                           OnAddToCart="AddToCart"
+                                           OnAddToWishlist="AddToWishlist" />
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="row">
+                        <div class="col-12">
+                            <MudTable Items="products" Hover="true" Striped="true">
+                                <HeaderContent>
+                                    <MudTh>Image</MudTh>
+                                    <MudTh>Name</MudTh>
+                                    <MudTh>Brand</MudTh>
+                                    <MudTh>Price</MudTh>
+                                    <MudTh>Year</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd>
+                                        <img src="@context.ImageUrl"
+                                             alt="@context.Name"
+                                             style="width: 60px; height: 45px; object-fit: cover;"
+                                             class="rounded" />
+                                    </MudTd>
+                                    <MudTd>@context.Name</MudTd>
+                                    <MudTd>@context.Brand</MudTd>
+                                    <MudTd>@context.Price.ToString("N0") TND</MudTd>
+                                    <MudTd>@context.Year</MudTd>
+                                    <MudTd>
+                                        <MudButton Variant="Variant.Text"
+                                                 Color="Color.Primary"
+                                                 Size="Size.Small"
+                                                 @onclick="() => ViewDetails(context)">
+                                            View
+                                        </MudButton>
+                                        <MudButton Variant="Variant.Text"
+                                                 Color="Color.Success"
+                                                 Size="Size.Small"
+                                                 @onclick="() => AddToCart(context)">
+                                            Add to Cart
+                                        </MudButton>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    </div>
+                }
+
+                <!-- Pagination -->
+                <div class="d-flex justify-content-center mt-4">
+                    <MudPagination Count="totalPages"
+                                 Selected="currentPage"
+                                 SelectedChanged="OnPageChanged"
+                                 Color="Color.Primary" />
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private IEnumerable<ProductDto> products;
+    private bool loading = true;
+    private ViewMode viewMode = ViewMode.Grid;
+    private int currentPage = 1;
+    private int totalPages = 1;
+
+    // Filter properties
+    private List<string> selectedCategories = new();
+    private decimal? minPrice;
+    private decimal? maxPrice;
+    private List<string> selectedBrands = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducts();
+    }
+
+    private async Task LoadProducts()
+    {
+        loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var filter = new ProductFilter
+            {
+                Categories = selectedCategories,
+                MinPrice = minPrice,
+                MaxPrice = maxPrice,
+                Brands = selectedBrands
+            };
+
+            var result = await ProductService.GetProductsAsync(filter, currentPage, 12);
+            products = result.Items;
+            totalPages = result.TotalPages;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading products: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task AddToCart(ProductDto product)
+    {
+        try
+        {
+            await ProductService.AddToCartAsync(product.Id);
+            Snackbar.Add($"{product.Name} added to cart!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error adding to cart: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task AddToWishlist(ProductDto product)
+    {
+        try
+        {
+            await ProductService.AddToWishlistAsync(product.Id);
+            Snackbar.Add($"{product.Name} added to wishlist!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error adding to wishlist: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void ViewDetails(ProductDto product)
+    {
+        Navigation.NavigateTo($"/product/{product.Id}");
+    }
+
+    private async Task OnCategoriesChanged(List<string> categories)
+    {
+        selectedCategories = categories;
+        currentPage = 1;
+        await LoadProducts();
+    }
+
+    private async Task OnPriceChanged(decimal? min, decimal? max)
+    {
+        minPrice = min;
+        maxPrice = max;
+        currentPage = 1;
+        await LoadProducts();
+    }
+
+    private async Task OnBrandsChanged(List<string> brands)
+    {
+        selectedBrands = brands;
+        currentPage = 1;
+        await LoadProducts();
+    }
+
+    private async Task OnPageChanged(int page)
+    {
+        currentPage = page;
+        await LoadProducts();
+    }
+
+    private enum ViewMode { Grid, List }
+}
+\end{lstlisting}
+
+\subsection{Phase 4: Integration and Testing}
+
+\subsubsection{4.1 API Testing}
+\begin{itemize}
+    \item Unit tests for controllers and services
+    \item Integration tests for API endpoints
+    \item Authentication and authorization testing
+    \item File upload testing
+    \item Performance testing with load simulation
+\end{itemize}
+
+\subsubsection{4.2 Frontend Testing}
+\begin{itemize}
+    \item Component unit tests with bUnit
+    \item Integration tests for API communication
+    \item End-to-end tests with Playwright
+    \item Cross-browser compatibility testing
+    \item Mobile responsiveness testing
+\end{itemize}
+
+\subsubsection{4.3 Deployment Configuration}
+\begin{itemize}
+    \item Docker containerization for both applications
+    \item CI/CD pipeline setup
+    \item Environment-specific configuration
+    \item SSL/TLS configuration
+    \item CDN setup for static assets
+\end{itemize}
+
+\section{Technology Stack Changes}
+
+\subsection{Backend API}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Component & New Technology \\
+\midrule
+Framework & ASP.NET Core 8.0 Web API \\
+Authentication & JWT Bearer Tokens \\
+Documentation & Swagger/OpenAPI 3.0 \\
+Serialization & System.Text.Json \\
+Validation & FluentValidation \\
+Caching & Redis (optional) \\
+Background Jobs & Hangfire \\
+Logging & Serilog \\
+\bottomrule
+\end{tabular}
+
+\subsection{Frontend Application}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Component & New Technology \\
+\midrule
+Framework & Blazor WebAssembly \\
+UI Library & MudBlazor \\
+State Management & Fluxor \\
+HTTP Client & HttpClient with IHttpClientFactory \\
+Authentication & Custom AuthenticationStateProvider \\
+Local Storage & Blazored.LocalStorage \\
+Notifications & MudBlazor Snackbar \\
+Charts & MudBlazor Charts \\
+PWA Support & Blazor PWA Template \\
+\bottomrule
+\end{tabular}
+
+\subsection{Development Tools}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Tool & Purpose \\
+\midrule
+Visual Studio 2022 & IDE for both projects \\
+.NET CLI & Project creation and management \\
+Docker Desktop & Container development \\
+Postman & API testing and documentation \\
+GitHub Actions & CI/CD pipelines \\
+Azure DevOps & Project management \\
+Swagger UI & API documentation \\
+\bottomrule
+\end{tabular}
+
+\section{Migration Strategy}
+
+\subsection{Data Migration}
+\begin{enumerate}
+    \item Backup existing database
+    \item Run existing migrations on new API project
+    \item Verify data integrity
+    \item Update any schema changes required for API
+    \item Test data access from API endpoints
+\end{enumerate}
+
+\subsection{Feature Migration Priority}
+\begin{enumerate}
+    \item \textbf{High Priority}: User authentication and authorization
+    \item \textbf{High Priority}: Product catalog and search
+    \item \textbf{Medium Priority}: Shopping cart and checkout
+    \item \textbf{Medium Priority}: User profile management
+    \item \textbf{Low Priority}: Admin dashboard and analytics
+    \item \textbf{Low Priority}: Advanced features (wishlist, messaging)
+\end{enumerate}
+
+\subsection{Rollback Strategy}
+\begin{itemize}
+    \item Keep original MVC application as backup
+    \item Feature flags for gradual rollout
+    \item Database rollback scripts
+    \item Monitoring and alerting for new system
+    \item A/B testing capabilities
+\end{itemize}
+
+\section{Risks and Mitigation}
+
+\subsection{Technical Risks}
+\begin{tabular}{@{}lp{10cm}@{}}
+\toprule
+Risk & Mitigation Strategy \\
+\midrule
+API Performance Issues & Implement caching, optimize queries, use CDN \\
+Authentication Complexity & Use established JWT patterns, comprehensive testing \\
+Data Consistency & Implement proper transaction management, data validation \\
+Browser Compatibility & Test across multiple browsers, use progressive enhancement \\
+Mobile Performance & Implement lazy loading, optimize bundle size \\
+\bottomrule
+\end{tabular}
+
+\subsection{Business Risks}
+\begin{tabular}{@{}lp{10cm}@{}}
+\toprule
+Risk & Mitigation Strategy \\
+\midrule
+Extended Development Time & Phased approach with working increments \\
+User Adoption Issues & Maintain similar UI/UX, provide training \\
+Data Loss & Comprehensive backups, data migration testing \\
+Downtime During Migration & Blue-green deployment strategy \\
+Team Learning Curve & Training sessions, documentation \\
+\bottomrule
+\end{tabular}
+
+\section{Resource Requirements}
+
+\subsection{Development Team}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Role & Count & Responsibilities \\
+\midrule
+Senior Backend Developer & 2 & API development, database design \\
+Senior Frontend Developer & 2 & Blazor development, UI/UX \\
+Full-Stack Developer & 1 & Integration, testing \\
+DevOps Engineer & 1 & Deployment, infrastructure \\
+QA Engineer & 1 & Testing, quality assurance \\
+Project Manager & 1 & Coordination, planning \\
+\bottomrule
+\end{tabular}
+
+\subsection{Technology Requirements}
+\begin{itemize}
+    \item Development servers (Windows/Linux)
+    \item Database servers (SQL Server)
+    \item CI/CD infrastructure (GitHub Actions/Azure DevOps)
+    \item Testing environments (staging, production)
+    \item Monitoring tools (Application Insights, Azure Monitor)
+    \item Documentation tools (Swagger, MkDocs)
+\end{itemize}
+
+\subsection{Timeline}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{timeline_diagram.png}
+    \caption{Project Timeline}
+\end{figure}
+
+\begin{tabular}{@{}lll@{}}
+\toprule
+Phase & Duration & Deliverables \\
+\midrule
+Planning \& Setup & 2 weeks & Architecture documents, project setup \\
+Backend API Development & 6 weeks & Complete REST API with documentation \\
+Frontend Development & 6 weeks & Blazor application with all features \\
+Integration \& Testing & 4 weeks & Integrated system, comprehensive testing \\
+Deployment \& Training & 2 weeks & Production deployment, user training \\
+\bottomrule
+\end{tabular}
+
+\section{Success Metrics}
+
+\subsection{Technical Metrics}
+\begin{itemize}
+    \item API response time < 200ms for 95\% of requests
+    \item Frontend bundle size < 2MB
+    \item Test coverage > 80\% for critical components
+    \item Zero data loss during migration
+    \item 99.9\% uptime post-deployment
+\end{itemize}
+
+\subsection{Business Metrics}
+\begin{itemize}
+    \item User session duration maintained or improved
+    \item Conversion rate maintained or increased
+    \item Customer satisfaction score > 4.5/5
+    \item Development velocity increased by 30\%
+    \item Time-to-market for new features reduced by 50\%
+\end{itemize}
+
+\section{Conclusion}
+
+The transformation from a monolithic MVC application to a microservices architecture with a REST API backend and Blazor WebAssembly frontend represents a significant modernization of the Tunis Motors platform. This architectural change will provide:
+
+\begin{enumerate}
+    \item \textbf{Scalability}: Independent scaling of frontend and backend components
+    \item \textbf{Maintainability}: Clear separation of concerns and modular design
+    \item \textbf{Flexibility}: Support for multiple client types and future expansion
+    \item \textbf{Performance}: Optimized loading and better user experience
+    \item \textbf{Developer Experience}: Modern development tools and practices
+\end{enumerate}
+
+The phased approach ensures minimal disruption to existing functionality while providing a solid foundation for future growth and innovation. The new architecture positions Tunis Motors as a modern, scalable e-commerce platform capable of serving customers across multiple channels and devices.
+
+\end{document}

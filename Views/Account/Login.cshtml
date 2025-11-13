@@ -41,6 +41,7 @@
                     }
 
                     <form asp-route-returnurl="@returnUrl" method="post" class="form-horizontal">
+                        @Html.AntiForgeryToken()
                         <div asp-validation-summary="All" class="text-danger alert alert-danger" style="display: @((ViewData.ModelState.IsValid) ? "none" : "block")"></div>
 
                         <div class="form-group">
@@ -70,6 +71,12 @@
                         </div>
 
                         <div class="form-group">
+                            <p><a asp-controller="Account" asp-action="ForgotPassword">Forgot your password?</a></p>
+                            @if (ViewData.ModelState.ContainsKey(string.Empty) &&
+                                ViewData.ModelState[string.Empty].Errors.Any(e => e.ErrorMessage.Contains("confirm your email")))
+                            {
+                                <p><a href="#" onclick="resendConfirmation()" id="resendLink">Resend verification email</a></p>
+                            }
                             <p>Don't have an account? <a asp-controller="Account" asp-action="Register">Register here</a></p>
                         </div>
                     </form>
@@ -81,3 +88,36 @@
     <!-- /container -->
 </div>
 <!-- /SECTION -->
+
+@section Scripts {
+    <script>
+        function resendConfirmation() {
+            var email = document.querySelector('input[name="Email"]').value;
+            if (!email) {
+                alert('Please enter your email address first.');
+                return;
+            }
+
+            fetch('/Account/ResendConfirmation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: 'email=' + encodeURIComponent(email)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    document.getElementById('resendLink').style.display = 'none';
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Error sending confirmation email: ' + error.message);
+            });
+        }
+    </script>
+}

@@ -61,16 +61,53 @@
                             <label asp-for="Address" class="control-label">Delivery Address</label>
                             <input asp-for="Address" class="input" placeholder="Enter your full delivery address" required />
                             <span asp-validation-for="Address" class="text-danger"></span>
+                            @if (!string.IsNullOrEmpty(Model.Address))
+                            {
+                                <small class="form-text text-muted">
+                                    <i class="fa fa-info-circle"></i> Address pre-filled from your profile. You can edit it if needed.
+                                </small>
+                            }
+                            else
+                            {
+                                <small class="form-text text-muted">
+                                    <i class="fa fa-info-circle"></i> Complete your profile to auto-fill your address next time.
+                                </small>
+                            }
                         </div>
 
                         <div class="form-group">
-                            <label for="PaymentMethod" class="control-label">Payment Method</label>
-                            <select class="input" id="PaymentMethod" name="PaymentMethod">
-                                <option value="CreditCard">Credit Card</option>
+                            <label asp-for="PaymentMethod" class="control-label">Payment Method</label>
+                            <select asp-for="PaymentMethod" class="input" id="paymentMethodSelect">
+                                @if ((decimal)Model.TotalAmount <= 999999.99m)
+                                {
+                                    <option value="Stripe">Credit Card (Stripe)</option>
+                                }
+                                else
+                                {
+                                    <option value="Stripe" disabled title="Stripe payments limited to $999,999.99">Credit Card (Stripe) - Not available for large amounts</option>
+                                }
                                 <option value="Paypal">PayPal</option>
                                 <option value="BankTransfer">Bank Transfer</option>
                                 <option value="CashOnDelivery">Cash on Delivery</option>
                             </select>
+                            <span asp-validation-for="PaymentMethod" class="text-danger"></span>
+                            @if ((decimal)Model.TotalAmount > 999999.99m)
+                            {
+                                <small class="form-text text-warning">
+                                    <i class="fa fa-info-circle"></i> For orders over $999,999.99, please use Bank Transfer or Cash on Delivery.
+                                </small>
+                            }
+                        </div>
+
+                        <!-- Stripe Payment Form -->
+                        <div id="stripePaymentForm" style="display: none;">
+                            <div class="form-group">
+                                <label class="control-label">Card Information</label>
+                                <div id="card-element" class="form-control" style="padding: 12px; height: auto;">
+                                    <!-- Stripe Card Element will be inserted here -->
+                                </div>
+                                <div id="card-errors" class="text-danger mt-2" role="alert"></div>
+                            </div>
                         </div>
 
                         <!-- Hidden fields for cart items -->
@@ -97,7 +134,7 @@
                         {
                             <div class="order-col">
                                 <div>@item.Quantity x @item.ProductName</div>
-                                <div>@(item.Price * item.Quantity).ToString("N0") TND</div>
+                                <div>@(Math.Round(item.Price * item.Quantity, 0).ToString("N0")) TND</div>
                             </div>
                         }
                     </div>
@@ -111,14 +148,14 @@
 
                     <div class="order-col">
                         <div><strong>TOTAL</strong></div>
-                        <div><strong class="order-total">@Model.TotalAmount.ToString("N0") TND</strong></div>
+                        <div><strong class="order-total">@(Math.Round(Model.TotalAmount, 0).ToString("N0")) TND</strong></div>
                     </div>
 
                     <div class="order-note">
                         <p>Please review your order details before proceeding with payment.</p>
                     </div>
 
-                    <button type="submit" form="checkout-form" class="primary-btn order-submit">
+                    <button type="button" id="placeOrderBtn" class="primary-btn order-submit">
                         Place Order
                     </button>
                 </div>
@@ -129,3 +166,90 @@
     <!-- /container -->
 </div>
 <!-- /SECTION -->
+
+@section Scripts {
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        // Stripe configuration
+        const stripe = Stripe('@ViewBag.StripePublishableKey');
+        const elements = stripe.elements();
+        let cardElement;
+
+        // Initialize Stripe Elements
+        document.addEventListener('DOMContentLoaded', function() {
+            cardElement = elements.create('card', {
+                style: {
+                    base: {
+                        fontSize: '16px',
+                        color: '#32325d',
+                        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                        '::placeholder': {
+                            color: '#aab7c4'
+                        }
+                    }
+                }
+            });
+
+            // Mount the card element
+            cardElement.mount('#card-element');
+
+            // Handle real-time validation errors
+            cardElement.on('change', function(event) {
+                const displayError = document.getElementById('card-errors');
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            });
+        });
+
+        // Payment method selection
+        document.getElementById('paymentMethodSelect').addEventListener('change', function() {
+            const stripeForm = document.getElementById('stripePaymentForm');
+            const placeOrderBtn = document.getElementById('placeOrderBtn');
+
+            if (this.value === 'Stripe') {
+                stripeForm.style.display = 'block';
+                placeOrderBtn.textContent = 'Pay with Card';
+            } else {
+                stripeForm.style.display = 'none';
+                placeOrderBtn.textContent = 'Place Order';
+            }
+        });
+
+        // Form submission
+        document.getElementById('placeOrderBtn').addEventListener('click', async function(e) {
+            e.preventDefault();
+
+            const paymentMethod = document.getElementById('paymentMethodSelect').value;
+            const form = document.getElementById('checkout-form');
+
+            if (paymentMethod === 'Stripe') {
+                // Handle Stripe payment
+                const { error, paymentMethod: stripePaymentMethod } = await stripe.createPaymentMethod({
+                    type: 'card',
+                    card: cardElement,
+                });
+
+                if (error) {
+                    document.getElementById('card-errors').textContent = error.message;
+                    return;
+                }
+
+                // Add payment method ID to form
+                const paymentMethodInput = document.createElement('input');
+                paymentMethodInput.type = 'hidden';
+                paymentMethodInput.name = 'StripePaymentMethodId';
+                paymentMethodInput.value = stripePaymentMethod.id;
+                form.appendChild(paymentMethodInput);
+
+                // Submit form
+                form.submit();
+            } else {
+                // Submit form directly for other payment methods
+                form.submit();
+            }
+        });
+    </script>
+}

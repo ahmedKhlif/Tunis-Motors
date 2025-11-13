@@ -37,6 +37,8 @@
                     <p>Manage all registered users and their roles</p>
                 </div>
 
+                @Html.AntiForgeryToken()
+
                 <div class="table-responsive">
                     <table class="table table-striped table-hover">
                         <thead class="table-dark">
@@ -56,7 +58,10 @@
                                     <td>@user.Email</td>
                                     <td>@user.UserName</td>
                                     <td>
-                                        <span class="badge bg-primary">@user.Roles</span>
+                                        @foreach (var role in user.Roles.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries))
+                                        {
+                                            <span class="badge bg-primary me-1">@role</span>
+                                        }
                                     </td>
                                     <td>
                                         @if (user.EmailConfirmed)
@@ -80,7 +85,11 @@
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <a asp-controller="Admin" asp-action="EditUsersInRole" asp-route-roleId="@user.Roles.Split(',')[0]" class="btn btn-sm btn-outline-primary">
+                                            @{
+                                                var rolesArray = user.Roles.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
+                                                var firstRole = rolesArray.Length > 0 ? rolesArray[0] : "User";
+                                            }
+                                            <a asp-controller="Admin" asp-action="EditUsersInRole" asp-route-roleId="@firstRole" class="btn btn-sm btn-outline-primary">
                                                 <i class="fa fa-edit"></i> Edit Roles
                                             </a>
                                             <a asp-controller="Profile" asp-action="Index" asp-route-id="@user.Id" class="btn btn-sm btn-outline-info">
@@ -98,6 +107,9 @@
                                                     <i class="fa fa-unlock"></i> Unlock
                                                 </button>
                                             }
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('@user.Id')">
+                                                <i class="fa fa-trash"></i> Delete
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -125,17 +137,76 @@
     <script>
         function lockUser(userId) {
             if (confirm('Are you sure you want to lock this user account?')) {
-                // TODO: Implement lock user functionality
-                alert('User locked successfully');
-                location.reload();
+                fetch('/Admin/LockUser', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: 'userId=' + encodeURIComponent(userId)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error locking user: ' + error.message);
+                });
             }
         }
 
         function unlockUser(userId) {
             if (confirm('Are you sure you want to unlock this user account?')) {
-                // TODO: Implement unlock user functionality
-                alert('User unlocked successfully');
-                location.reload();
+                fetch('/Admin/UnlockUser', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: 'userId=' + encodeURIComponent(userId)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error unlocking user: ' + error.message);
+                });
+            }
+        }
+
+        function deleteUser(userId) {
+            if (confirm('Are you sure you want to permanently delete this user account? This action cannot be undone.')) {
+                fetch('/Admin/DeleteUser', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: 'userId=' + encodeURIComponent(userId)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error deleting user: ' + error.message);
+                });
             }
         }
     </script>

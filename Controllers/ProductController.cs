@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.IO;
 using System.Security.Claims;
 using TP2.Models;
 using TP2.Models.Repositories;
+using TP2.Services;
 using TP2.ViewModels;
 
 namespace TP2.Controllers
@@ -15,13 +17,18 @@ namespace TP2.Controllers
         private readonly ICategoryRepository _categoryRepository;
         private readonly AppDbContext _context;
         private readonly IWebHostEnvironment _hostEnvironment;
+        private readonly IEmailService _emailService;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public ProductController(IProductRepository productRepository, AppDbContext context, ICategoryRepository categoryRepository, IWebHostEnvironment hostEnvironment)
+        public ProductController(IProductRepository productRepository, AppDbContext context, ICategoryRepository categoryRepository,
+                               IWebHostEnvironment hostEnvironment, IEmailService emailService, UserManager<IdentityUser> userManager)
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
             _context = context;
             _hostEnvironment = hostEnvironment;
+            _emailService = emailService;
+            _userManager = userManager;
         }
 
         // GET: Index
@@ -132,7 +139,7 @@ namespace TP2.Controllers
         // POST: Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(CreateViewModel model)
+        public async Task<IActionResult> Create(CreateViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -177,6 +184,39 @@ namespace TP2.Controllers
                 };
 
                 _productRepository.Add(product);
+
+                // Send email notification to admins/managers if listing needs approval
+                if (!product.IsApproved)
+                {
+                    try
+                    {
+                        // Get all admin and manager users
+                        var adminUsers = await _userManager.GetUsersInRoleAsync("Admin");
+                        var managerUsers = await _userManager.GetUsersInRoleAsync("Manager");
+                        var allAdminsAndManagers = adminUsers.Concat(managerUsers).Distinct();
+
+                        var seller = await _userManager.FindByIdAsync(product.SellerId);
+
+                        foreach (var adminOrManager in allAdminsAndManagers)
+                        {
+                            if (!string.IsNullOrEmpty(adminOrManager.Email))
+                            {
+                                await _emailService.SendApprovalRequiredNotificationAsync(
+                                    adminOrManager.Email,
+                                    adminOrManager.UserName,
+                                    product.Name,
+                                    seller?.UserName ?? "Unknown Seller"
+                                );
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log email error but don't fail the listing creation
+                        Console.WriteLine($"Approval notification failed: {ex.Message}");
+                    }
+                }
+
                 return RedirectToAction("Index");
             }
 
@@ -258,6 +298,7 @@ namespace TP2.Controllers
                 product.Condition = model.Condition ?? "Used";
                 product.Rating = model.Rating;
                 product.Location = model.Location;
+                product.QuantityInStock = model.QuantityInStock ?? 1;
                 product.UpdatedAt = DateTime.Now;
                 product.CategoryId = model.CategoryId.Value;
 

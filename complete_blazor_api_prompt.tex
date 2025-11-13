@@ -1,0 +1,1406 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+% Code highlighting
+\lstset{
+    language=C#,
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny,
+    frame=single,
+    breaklines=true,
+    captionpos=b
+}
+
+% Page setup
+\geometry{margin=1in}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\leftmark}
+\fancyhead[R]{\thepage\ of \pageref{LastPage}}
+\fancyfoot[C]{\footnotesize Complete Blazor + REST API Implementation Prompt}
+
+\title{Complete Blazor WebAssembly + ASP.NET Core REST API Implementation Prompt}
+\author{For AI Assistant Implementation}
+\date{\today}
+
+\begin{document}
+
+% Title page
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+\section{Project Overview}
+
+Transform the existing Tunis Motors ASP.NET Core MVC application into a modern microservices architecture with:
+\begin{itemize}
+    \item \textbf{Backend}: Complete ASP.NET Core Web API with REST endpoints
+    \item \textbf{Frontend}: Blazor WebAssembly single-page application
+    \item \textbf{Shared}: Common DTOs and models library
+\end{itemize}
+
+\section{Current Application Analysis}
+
+\subsection{Existing Features}
+\begin{itemize}
+    \item User authentication and role-based authorization (Admin, Manager, Seller, Buyer)
+    \item Product catalog with car listings (name, brand, price, image, specifications)
+    \item Category management with optional images
+    \item Shopping cart with real-time updates
+    \item Wishlist functionality
+    \item Order management and checkout process
+    \item User profile management
+    \item Admin dashboard with analytics
+    \item Approval system for car listings
+    \item Message system between users
+    \item Responsive Bootstrap 5 design
+    \item Font Awesome 6 icons
+    \item SQL Server database with Entity Framework Core
+\end{itemize}
+
+\subsection{Current Technology Stack}
+\begin{itemize}
+    \item ASP.NET Core 8.0 MVC
+    \item Razor views with server-side rendering
+    \item jQuery and AJAX for dynamic updates
+    \item Bootstrap 5 + custom CSS
+    \item Entity Framework Core with SQL Server
+    \item ASP.NET Core Identity for authentication
+\end{itemize}
+
+\section{Required Implementation}
+
+\subsection{Phase 1: Project Setup}
+
+Create the following solution structure:
+
+\begin{lstlisting}[caption=Solution Structure]
+TunisMotors.Solution/
+├── TunisMotors.API/                    # ASP.NET Core Web API
+│   ├── Controllers/
+│   │   ├── AuthController.cs          # Authentication endpoints
+│   │   ├── ProductsController.cs      # Product CRUD operations
+│   │   ├── CategoriesController.cs    # Category management
+│   │   ├── OrdersController.cs        # Order processing
+│   │   ├── CartController.cs          # Shopping cart operations
+│   │   ├── WishlistController.cs      # Wishlist management
+│   │   ├── UsersController.cs         # User management
+│   │   ├── MessagesController.cs      # Messaging system
+│   │   └── FilesController.cs         # File upload handling
+│   ├── Models/
+│   │   ├── Entities/                  # EF Core entities (keep existing)
+│   │   └── Configurations/            # Entity configurations
+│   ├── Services/
+│   │   ├── Interfaces/                # Service interfaces
+│   │   ├── Implementations/           # Service implementations
+│   │   └── Auth/                      # Authentication services
+│   ├── DTOs/
+│   │   ├── Requests/                  # Request DTOs
+│   │   └── Responses/                 # Response DTOs
+│   ├── Data/
+│   │   └── AppDbContext.cs           # Database context
+│   ├── Middleware/                    # Custom middleware
+│   ├── appsettings.json
+│   └── Program.cs
+├── TunisMotors.Frontend/               # Blazor WebAssembly
+│   ├── Pages/
+│   │   ├── Index.razor                # Home page
+│   │   ├── Products.razor             # Product listings
+│   │   ├── ProductDetails.razor       # Product details
+│   │   ├── Cart.razor                 # Shopping cart
+│   │   ├── Checkout.razor             # Checkout process
+│   │   ├── Orders.razor               # Order history
+│   │   ├── Profile.razor              # User profile
+│   │   ├── Login.razor                # Authentication
+│   │   ├── Register.razor             # Registration
+│   │   └── Admin/
+│   │       ├── Dashboard.razor        # Admin dashboard
+│   │       ├── Categories.razor       # Category management
+│   │       ├── Users.razor            # User management
+│   │       ├── Products.razor         # Product approvals
+│   │       └── Analytics.razor        # Analytics view
+│   ├── Components/
+│   │   ├── Layout/
+│   │   │   ├── MainLayout.razor      # Main layout
+│   │   │   └── NavMenu.razor         # Navigation menu
+│   │   ├── ProductCard.razor         # Product card component
+│   │   ├── CategoryFilter.razor      # Category filter
+│   │   ├── PriceRangeFilter.razor    # Price filter
+│   │   ├── BrandFilter.razor         # Brand filter
+│   │   ├── ShoppingCart.razor        # Cart component
+│   │   ├── Pagination.razor          # Pagination component
+│   │   ├── LoadingSpinner.razor      # Loading indicator
+│   │   └── NotificationToast.razor   # Toast notifications
+│   ├── Services/
+│   │   ├── ApiService.cs             # HTTP client service
+│   │   ├── AuthService.cs            # Authentication service
+│   │   ├── ProductService.cs         # Product operations
+│   │   ├── CartService.cs            # Cart operations
+│   │   ├── OrderService.cs           # Order operations
+│   │   ├── UserService.cs            # User operations
+│   │   ├── CategoryService.cs        # Category operations
+│   │   ├── MessageService.cs         # Message operations
+│   │   └── NotificationService.cs    # Notification service
+│   ├── Shared/
+│   │   ├── MainLayout.razor
+│   │   ├── RedirectToLogin.razor
+│   │   └── App.razor
+│   ├── wwwroot/
+│   │   ├── index.html
+│   │   ├── css/
+│   │   └── js/
+│   ├── _Imports.razor
+│   ├── App.razor
+│   └── Program.cs
+├── TunisMotors.Shared/                 # Shared components
+│   ├── DTOs/
+│   │   ├── Auth/
+│   │   │   ├── LoginRequest.cs
+│   │   │   ├── RegisterRequest.cs
+│   │   │   └── AuthResponse.cs
+│   │   ├── Products/
+│   │   │   ├── ProductDto.cs
+│   │   │   ├── CreateProductRequest.cs
+│   │   │   ├── UpdateProductRequest.cs
+│   │   │   └── ProductFilter.cs
+│   │   ├── Categories/
+│   │   │   ├── CategoryDto.cs
+│   │   │   └── CreateCategoryRequest.cs
+│   │   ├── Orders/
+│   │   │   ├── OrderDto.cs
+│   │   │   ├── CreateOrderRequest.cs
+│   │   ├── Cart/
+│   │   │   ├── CartItemDto.cs
+│   │   │   └── AddToCartRequest.cs
+│   │   ├── Users/
+│   │   │   ├── UserDto.cs
+│   │   │   └── UpdateProfileRequest.cs
+│   │   └── Common/
+│   │       ├── PagedResult.cs
+│   │       ├── ApiResponse.cs
+│   │       └── FileUploadRequest.cs
+│   ├── Models/
+│   │   ├── Enums.cs                   # Application enums
+│   │   └── Constants.cs               # Application constants
+│   └── Validators/                    # FluentValidation validators
+└── TunisMotors.sln
+\end{lstlisting}
+
+\subsection{Phase 2: Backend API Implementation}
+
+\subsubsection{2.1 Authentication Setup}
+
+Implement JWT-based authentication in the API:
+
+\begin{lstlisting}[caption=API Authentication Configuration]
+// Program.cs - TunisMotors.API
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                // Log authentication failures
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                // Additional token validation logic
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("SellerOrAdmin", policy => policy.RequireRole("Seller", "Admin"));
+    options.AddPolicy("ManagerOrAdmin", policy => policy.RequireRole("Manager", "Admin"));
+});
+\end{lstlisting}
+
+\subsubsection{2.2 API Controllers Implementation}
+
+Implement all required API controllers with proper HTTP methods, status codes, and error handling.
+
+\begin{lstlisting}[caption=Products API Controller]
+// Controllers/ProductsController.cs
+[ApiController]
+[Route("api/[controller]")]
+public class ProductsController : ControllerBase
+{
+    private readonly IProductService _productService;
+    private readonly IMapper _mapper;
+
+    public ProductsController(IProductService productService, IMapper mapper)
+    {
+        _productService = productService;
+        _mapper = mapper;
+    }
+
+    [HttpGet]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(PagedResult<ProductDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<ProductDto>>> GetProducts(
+        [FromQuery] ProductFilter filter,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 12)
+    {
+        if (page < 1 || pageSize < 1 || pageSize > 100)
+            return BadRequest("Invalid pagination parameters");
+
+        var result = await _productService.GetProductsAsync(filter, page, pageSize);
+        return Ok(result);
+    }
+
+    [HttpGet("{id}")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ProductDto>> GetProduct(int id)
+    {
+        var product = await _productService.GetProductByIdAsync(id);
+        if (product == null)
+            return NotFound();
+
+        return Ok(product);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Seller,Admin")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(ProductDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ProductDto>> CreateProduct(
+        [FromForm] CreateProductRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var product = await _productService.CreateProductAsync(request, userId);
+            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception
+            return StatusCode(500, "An error occurred while creating the product");
+        }
+    }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Seller,Admin")]
+    [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ProductDto>> UpdateProduct(
+        int id, [FromBody] UpdateProductRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var product = await _productService.UpdateProductAsync(id, request, userId);
+
+            if (product == null)
+                return NotFound();
+
+            return Ok(product);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (Exception ex)
+        {
+            // Log the exception
+            return StatusCode(500, "An error occurred while updating the product");
+        }
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Seller,Admin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> DeleteProduct(int id)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var result = await _productService.DeleteProductAsync(id, userId);
+
+            if (!result)
+                return NotFound();
+
+            return NoContent();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (Exception ex)
+        {
+            // Log the exception
+            return StatusCode(500, "An error occurred while deleting the product");
+        }
+    }
+
+    [HttpPost("{id}/approve")]
+    [Authorize(Roles = "Manager,Admin")]
+    [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ProductDto>> ApproveProduct(int id)
+    {
+        var product = await _productService.ApproveProductAsync(id);
+        if (product == null)
+            return NotFound();
+
+        return Ok(product);
+    }
+
+    [HttpPost("{id}/reject")]
+    [Authorize(Roles = "Manager,Admin")]
+    [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ProductDto>> RejectProduct(int id, [FromBody] string reason)
+    {
+        var product = await _productService.RejectProductAsync(id, reason);
+        if (product == null)
+            return NotFound();
+
+        return Ok(product);
+    }
+}
+\end{lstlisting}
+
+\subsubsection{2.3 Authentication Controller}
+
+\begin{lstlisting}[caption=Authentication API Controller]
+// Controllers/AuthController.cs
+[ApiController]
+[Route("api/[controller]")]
+public class AuthController : ControllerBase
+{
+    private readonly IAuthService _authService;
+    private readonly IMapper _mapper;
+
+    public AuthController(IAuthService authService, IMapper mapper)
+    {
+        _authService = authService;
+        _mapper = mapper;
+    }
+
+    [HttpPost("login")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var result = await _authService.LoginAsync(request);
+        if (result == null)
+            return Unauthorized("Invalid credentials");
+
+        return Ok(result);
+    }
+
+    [HttpPost("register")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            var result = await _authService.RegisterAsync(request);
+            return CreatedAtAction(nameof(Login), result);
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception
+            return StatusCode(500, "An error occurred during registration");
+        }
+    }
+
+    [HttpPost("refresh")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<AuthResponse>> RefreshToken([FromBody] RefreshTokenRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var result = await _authService.RefreshTokenAsync(request);
+        if (result == null)
+            return BadRequest("Invalid refresh token");
+
+        return Ok(result);
+    }
+
+    [HttpPost("logout")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> Logout()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        await _authService.LogoutAsync(userId);
+        return NoContent();
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<UserDto>> GetCurrentUser()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var user = await _authService.GetCurrentUserAsync(userId);
+
+        if (user == null)
+            return NotFound();
+
+        return Ok(user);
+    }
+
+    [HttpPut("profile")]
+    [Authorize]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<UserDto>> UpdateProfile([FromBody] UpdateProfileRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _authService.UpdateProfileAsync(userId, request);
+            return Ok(user);
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception
+            return StatusCode(500, "An error occurred while updating profile");
+        }
+    }
+}
+\end{lstlisting}
+
+\subsubsection{2.4 Cart and Orders Controllers}
+
+\begin{lstlisting}[caption=Cart API Controller]
+// Controllers/CartController.cs
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class CartController : ControllerBase
+{
+    private readonly ICartService _cartService;
+
+    public CartController(ICartService cartService)
+    {
+        _cartService = cartService;
+    }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<CartItemDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<CartItemDto>>> GetCart()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var cartItems = await _cartService.GetCartItemsAsync(userId);
+        return Ok(cartItems);
+    }
+
+    [HttpPost("add")]
+    [ProducesResponseType(typeof(CartItemDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<CartItemDto>> AddToCart([FromBody] AddToCartRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var cartItem = await _cartService.AddToCartAsync(userId, request);
+            return CreatedAtAction(nameof(GetCart), cartItem);
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception
+            return StatusCode(500, "An error occurred while adding item to cart");
+        }
+    }
+
+    [HttpPut("{productId}")]
+    [ProducesResponseType(typeof(CartItemDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<CartItemDto>> UpdateCartItem(
+        int productId, [FromBody] UpdateCartItemRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var cartItem = await _cartService.UpdateCartItemAsync(userId, productId, request.Quantity);
+
+            if (cartItem == null)
+                return NotFound();
+
+            return Ok(cartItem);
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception
+            return StatusCode(500, "An error occurred while updating cart item");
+        }
+    }
+
+    [HttpDelete("{productId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RemoveFromCart(int productId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var result = await _cartService.RemoveFromCartAsync(userId, productId);
+
+        if (!result)
+            return NotFound();
+
+        return NoContent();
+    }
+
+    [HttpDelete]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> ClearCart()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        await _cartService.ClearCartAsync(userId);
+        return NoContent();
+    }
+
+    [HttpGet("count")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    public async Task<ActionResult<int>> GetCartCount()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var count = await _cartService.GetCartCountAsync(userId);
+        return Ok(count);
+    }
+}
+\end{lstlisting}
+
+\subsubsection{2.5 File Upload Controller}
+
+\begin{lstlisting}[caption=File Upload API Controller]
+// Controllers/FilesController.cs
+[ApiController]
+[Route("api/[controller]")]
+public class FilesController : ControllerBase
+{
+    private readonly IWebHostEnvironment _environment;
+
+    public FilesController(IWebHostEnvironment environment)
+    {
+        _environment = environment;
+    }
+
+    [HttpPost("upload")]
+    [Authorize]
+    [ProducesResponseType(typeof(FileUploadResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<FileUploadResponse>> UploadFile(
+        [FromForm] IFormFile file, [FromForm] string folder = "general")
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded");
+
+        // Validate file type
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".pdf" };
+        var extension = Path.GetExtension(file.FileName).ToLower();
+        if (!allowedExtensions.Contains(extension))
+            return BadRequest("Invalid file type");
+
+        // Validate file size (max 10MB)
+        if (file.Length > 10 * 1024 * 1024)
+            return BadRequest("File size exceeds 10MB limit");
+
+        try
+        {
+            // Create folder if it doesn't exist
+            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", folder);
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            // Generate unique filename
+            var fileName = Guid.NewGuid().ToString() + extension;
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            // Save file
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var response = new FileUploadResponse
+            {
+                FileName = fileName,
+                OriginalFileName = file.FileName,
+                FileSize = file.Length,
+                ContentType = file.ContentType,
+                Url = $"/uploads/{folder}/{fileName}"
+            };
+
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception
+            return StatusCode(500, "An error occurred while uploading the file");
+        }
+    }
+
+    [HttpDelete("{folder}/{fileName}")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult DeleteFile(string folder, string fileName)
+    {
+        var filePath = Path.Combine(_environment.WebRootPath, "uploads", folder, fileName);
+
+        if (!System.IO.File.Exists(filePath))
+            return NotFound();
+
+        try
+        {
+            System.IO.File.Delete(filePath);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            // Log the exception
+            return StatusCode(500, "An error occurred while deleting the file");
+        }
+    }
+}
+\end{lstlisting}
+
+\subsection{Phase 3: Frontend Blazor Implementation}
+
+\subsubsection{3.1 Program.cs Configuration}
+
+\begin{lstlisting}[caption=Blazor Program.cs]
+// Program.cs - TunisMotors.Frontend
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MudBlazor.Services;
+using Blazored.LocalStorage;
+using TunisMotors.Frontend.Services;
+
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
+
+builder.Services.AddScoped(sp => new HttpClient
+{
+    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
+});
+
+// Add MudBlazor services
+builder.Services.AddMudServices();
+
+// Add local storage
+builder.Services.AddBlazoredLocalStorage();
+
+// Add custom services
+builder.Services.AddScoped<IApiService, ApiService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
+// Add AutoMapper
+builder.Services.AddAutoMapper(typeof(Program));
+
+await builder.Build().RunAsync();
+\end{lstlisting}
+
+\subsubsection{3.2 API Service Implementation}
+
+\begin{lstlisting}[caption=API Service in Blazor]
+// Services/ApiService.cs
+public class ApiService : IApiService
+{
+    private readonly HttpClient _httpClient;
+    private readonly ILocalStorageService _localStorage;
+    private readonly AuthenticationStateProvider _authStateProvider;
+    private readonly ILogger<ApiService> _logger;
+
+    public ApiService(
+        HttpClient httpClient,
+        ILocalStorageService localStorage,
+        AuthenticationStateProvider authStateProvider,
+        ILogger<ApiService> logger)
+    {
+        _httpClient = httpClient;
+        _localStorage = localStorage;
+        _authStateProvider = authStateProvider;
+        _logger = logger;
+
+        // Set base address for API
+        _httpClient.BaseAddress = new Uri("https://localhost:5001/api/");
+        _httpClient.DefaultRequestHeaders.Accept.Add(
+            new MediaTypeWithQualityHeaderValue("application/json"));
+    }
+
+    public async Task<T> GetAsync<T>(string endpoint, bool requireAuth = true)
+    {
+        try
+        {
+            if (requireAuth)
+                await SetAuthorizationHeader();
+
+            var response = await _httpClient.GetAsync(endpoint);
+            await HandleResponse(response);
+            return await response.Content.ReadFromJsonAsync<T>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error calling GET {endpoint}");
+            throw;
+        }
+    }
+
+    public async Task<T> PostAsync<T>(string endpoint, object data, bool requireAuth = true)
+    {
+        try
+        {
+            if (requireAuth)
+                await SetAuthorizationHeader();
+
+            var response = await _httpClient.PostAsJsonAsync(endpoint, data);
+            await HandleResponse(response);
+            return await response.Content.ReadFromJsonAsync<T>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error calling POST {endpoint}");
+            throw;
+        }
+    }
+
+    public async Task<T> PutAsync<T>(string endpoint, object data, bool requireAuth = true)
+    {
+        try
+        {
+            if (requireAuth)
+                await SetAuthorizationHeader();
+
+            var response = await _httpClient.PutAsJsonAsync(endpoint, data);
+            await HandleResponse(response);
+            return await response.Content.ReadFromJsonAsync<T>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error calling PUT {endpoint}");
+            throw;
+        }
+    }
+
+    public async Task DeleteAsync(string endpoint, bool requireAuth = true)
+    {
+        try
+        {
+            if (requireAuth)
+                await SetAuthorizationHeader();
+
+            var response = await _httpClient.DeleteAsync(endpoint);
+            await HandleResponse(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error calling DELETE {endpoint}");
+            throw;
+        }
+    }
+
+    public async Task<T> PostFileAsync<T>(string endpoint, MultipartFormDataContent content, bool requireAuth = true)
+    {
+        try
+        {
+            if (requireAuth)
+                await SetAuthorizationHeader();
+
+            var response = await _httpClient.PostAsync(endpoint, content);
+            await HandleResponse(response);
+            return await response.Content.ReadFromJsonAsync<T>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error calling POST file {endpoint}");
+            throw;
+        }
+    }
+
+    private async Task SetAuthorizationHeader()
+    {
+        var token = await _localStorage.GetItemAsync<string>("authToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+        }
+    }
+
+    private async Task HandleResponse(HttpResponseMessage response)
+    {
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"API call failed: {response.StatusCode} - {errorContent}");
+        }
+    }
+}
+\end{lstlisting}
+
+\subsubsection{3.3 Authentication Service}
+
+\begin{lstlisting}[caption=Authentication Service in Blazor]
+// Services/AuthService.cs
+public class AuthService : IAuthService
+{
+    private readonly IApiService _apiService;
+    private readonly ILocalStorageService _localStorage;
+    private readonly AuthenticationStateProvider _authStateProvider;
+    private readonly NavigationManager _navigation;
+    private readonly ISnackbar _snackbar;
+
+    public AuthService(
+        IApiService apiService,
+        ILocalStorageService localStorage,
+        AuthenticationStateProvider authStateProvider,
+        NavigationManager navigation,
+        ISnackbar snackbar)
+    {
+        _apiService = apiService;
+        _localStorage = localStorage;
+        _authStateProvider = authStateProvider;
+        _navigation = navigation;
+        _snackbar = snackbar;
+    }
+
+    public async Task<bool> LoginAsync(LoginRequest request)
+    {
+        try
+        {
+            var response = await _apiService.PostAsync<AuthResponse>("auth/login", request, false);
+
+            await _localStorage.SetItemAsync("authToken", response.Token);
+            await _localStorage.SetItemAsync("refreshToken", response.RefreshToken);
+            await _localStorage.SetItemAsync("user", response.User);
+
+            ((CustomAuthStateProvider)_authStateProvider).NotifyUserAuthentication(response.User);
+
+            _snackbar.Add("Login successful!", Severity.Success);
+            _navigation.NavigateTo("/");
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _snackbar.Add($"Login failed: {ex.Message}", Severity.Error);
+            return false;
+        }
+    }
+
+    public async Task<bool> RegisterAsync(RegisterRequest request)
+    {
+        try
+        {
+            var response = await _apiService.PostAsync<AuthResponse>("auth/register", request, false);
+
+            await _localStorage.SetItemAsync("authToken", response.Token);
+            await _localStorage.SetItemAsync("refreshToken", response.RefreshToken);
+            await _localStorage.SetItemAsync("user", response.User);
+
+            ((CustomAuthStateProvider)_authStateProvider).NotifyUserAuthentication(response.User);
+
+            _snackbar.Add("Registration successful!", Severity.Success);
+            _navigation.NavigateTo("/");
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _snackbar.Add($"Registration failed: {ex.Message}", Severity.Error);
+            return false;
+        }
+    }
+
+    public async Task LogoutAsync()
+    {
+        try
+        {
+            await _apiService.PostAsync<object>("auth/logout", null);
+        }
+        catch
+        {
+            // Ignore logout API errors
+        }
+
+        await _localStorage.RemoveItemAsync("authToken");
+        await _localStorage.RemoveItemAsync("refreshToken");
+        await _localStorage.RemoveItemAsync("user");
+
+        ((CustomAuthStateProvider)_authStateProvider).NotifyUserLogout();
+
+        _snackbar.Add("Logged out successfully", Severity.Info);
+        _navigation.NavigateTo("/login");
+    }
+
+    public async Task<UserDto> GetCurrentUserAsync()
+    {
+        return await _localStorage.GetItemAsync<UserDto>("user");
+    }
+
+    public async Task<bool> IsAuthenticatedAsync()
+    {
+        var token = await _localStorage.GetItemAsync<string>("authToken");
+        return !string.IsNullOrEmpty(token);
+    }
+
+    public async Task<string> GetTokenAsync()
+    {
+        return await _localStorage.GetItemAsync<string>("authToken");
+    }
+
+    public async Task RefreshTokenAsync()
+    {
+        try
+        {
+            var refreshToken = await _localStorage.GetItemAsync<string>("refreshToken");
+            if (string.IsNullOrEmpty(refreshToken))
+                throw new Exception("No refresh token available");
+
+            var request = new RefreshTokenRequest { RefreshToken = refreshToken };
+            var response = await _apiService.PostAsync<AuthResponse>("auth/refresh", request, false);
+
+            await _localStorage.SetItemAsync("authToken", response.Token);
+            await _localStorage.SetItemAsync("refreshToken", response.RefreshToken);
+        }
+        catch (Exception ex)
+        {
+            // If refresh fails, logout user
+            await LogoutAsync();
+            throw new Exception($"Token refresh failed: {ex.Message}");
+        }
+    }
+}
+\end{lstlisting}
+
+\subsubsection{3.4 Product Service}
+
+\begin{lstlisting}[caption=Product Service in Blazor]
+// Services/ProductService.cs
+public class ProductService : IProductService
+{
+    private readonly IApiService _apiService;
+    private readonly ISnackbar _snackbar;
+
+    public ProductService(IApiService apiService, ISnackbar snackbar)
+    {
+        _apiService = apiService;
+        _snackbar = snackbar;
+    }
+
+    public async Task<PagedResult<ProductDto>> GetProductsAsync(
+        ProductFilter filter = null, int page = 1, int pageSize = 12)
+    {
+        var queryParams = new List<string>();
+
+        if (filter != null)
+        {
+            if (!string.IsNullOrEmpty(filter.SearchTerm))
+                queryParams.Add($"searchTerm={Uri.EscapeDataString(filter.SearchTerm)}");
+
+            if (filter.CategoryId.HasValue)
+                queryParams.Add($"categoryId={filter.CategoryId}");
+
+            if (filter.MinPrice.HasValue)
+                queryParams.Add($"minPrice={filter.MinPrice}");
+
+            if (filter.MaxPrice.HasValue)
+                queryParams.Add($"maxPrice={filter.MaxPrice}");
+
+            if (!string.IsNullOrEmpty(filter.Brand))
+                queryParams.Add($"brand={Uri.EscapeDataString(filter.Brand)}");
+
+            if (filter.Condition.HasValue)
+                queryParams.Add($"condition={filter.Condition}");
+        }
+
+        queryParams.Add($"page={page}");
+        queryParams.Add($"pageSize={pageSize}");
+
+        var queryString = string.Join("&", queryParams);
+        var endpoint = $"products?{queryString}";
+
+        return await _apiService.GetAsync<PagedResult<ProductDto>>(endpoint, false);
+    }
+
+    public async Task<ProductDto> GetProductByIdAsync(int id)
+    {
+        return await _apiService.GetAsync<ProductDto>($"products/{id}", false);
+    }
+
+    public async Task<ProductDto> CreateProductAsync(CreateProductRequest request)
+    {
+        var content = new MultipartFormDataContent();
+
+        // Add form data
+        content.Add(new StringContent(request.Name), "Name");
+        content.Add(new StringContent(request.Brand), "Brand");
+        content.Add(new StringContent(request.Price.ToString()), "Price");
+        content.Add(new StringContent(request.Description ?? ""), "Description");
+        content.Add(new StringContent(request.Year.ToString()), "Year");
+        content.Add(new StringContent(request.Mileage?.ToString() ?? "0"), "Mileage");
+        content.Add(new StringContent(request.FuelType), "FuelType");
+        content.Add(new StringContent(request.Transmission), "Transmission");
+        content.Add(new StringContent(request.Color ?? ""), "Color");
+        content.Add(new StringContent(request.Condition.ToString()), "Condition");
+        content.Add(new StringContent(request.CategoryId.ToString()), "CategoryId");
+
+        // Add specifications
+        if (request.Specifications != null)
+        {
+            content.Add(new StringContent(
+                System.Text.Json.JsonSerializer.Serialize(request.Specifications)), "Specifications");
+        }
+
+        // Add image file
+        if (request.Image != null)
+        {
+            var fileContent = new StreamContent(request.Image.OpenReadStream());
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(request.Image.ContentType);
+            content.Add(fileContent, "Image", request.Image.Name);
+        }
+
+        var result = await _apiService.PostFileAsync<ProductDto>("products", content);
+        _snackbar.Add("Product created successfully!", Severity.Success);
+        return result;
+    }
+
+    public async Task<ProductDto> UpdateProductAsync(int id, UpdateProductRequest request)
+    {
+        var result = await _apiService.PutAsync<ProductDto>($"products/{id}", request);
+        _snackbar.Add("Product updated successfully!", Severity.Success);
+        return result;
+    }
+
+    public async Task<bool> DeleteProductAsync(int id)
+    {
+        try
+        {
+            await _apiService.DeleteAsync($"products/{id}");
+            _snackbar.Add("Product deleted successfully!", Severity.Success);
+            return true;
+        }
+        catch
+        {
+            _snackbar.Add("Failed to delete product", Severity.Error);
+            return false;
+        }
+    }
+
+    public async Task<IEnumerable<string>> GetBrandsAsync()
+    {
+        return await _apiService.GetAsync<IEnumerable<string>>("products/brands", false);
+    }
+
+    public async Task<IEnumerable<ProductDto>> GetFeaturedProductsAsync(int count = 8)
+    {
+        return await _apiService.GetAsync<IEnumerable<ProductDto>>($"products/featured?count={count}", false);
+    }
+
+    public async Task<IEnumerable<ProductDto>> GetRelatedProductsAsync(int productId, int count = 4)
+    {
+        return await _apiService.GetAsync<IEnumerable<ProductDto>>($"products/{productId}/related?count={count}", false);
+    }
+}
+\end{lstlisting}
+
+\subsubsection{3.5 Main Product Listing Page}
+
+\begin{lstlisting}[caption=Products Page in Blazor]
+@page "/products"
+@inject IProductService ProductService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject IAuthService AuthService
+
+<PageTitle>Car Listings - Tunis Motors</PageTitle>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <Icon Icon="@Icons.Material.Filled.FilterList" Class="me-2" />
+                        Filters
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Search -->
+                    <div class="mb-3">
+                        <MudTextField @bind-Value="filter.SearchTerm"
+                                    Label="Search cars..."
+                                    Variant="Variant.Outlined"
+                                    Adornment="Adornment.Start"
+                                    AdornmentIcon="@Icons.Material.Filled.Search"
+                                    FullWidth="true" />
+                    </div>
+
+                    <!-- Category Filter -->
+                    <CategoryFilter @bind-SelectedCategories="filter.Categories"
+                                  @bind-SelectedCategoriesChanged="OnCategoriesChanged" />
+
+                    <!-- Price Range Filter -->
+                    <div class="mb-3">
+                        <MudTextField @bind-Value="filter.MinPrice"
+                                    Label="Min Price (TND)"
+                                    Variant="Variant.Outlined"
+                                    Adornment="Adornment.Start"
+                                    AdornmentText="TND"
+                                    FullWidth="true"
+                                    InputType="InputType.Number" />
+                        <MudTextField @bind-Value="filter.MaxPrice"
+                                    Label="Max Price (TND)"
+                                    Variant="Variant.Outlined"
+                                    Adornment="Adornment.Start"
+                                    AdornmentText="TND"
+                                    FullWidth="true"
+                                    InputType="InputType.Number" />
+                    </div>
+
+                    <!-- Brand Filter -->
+                    <BrandFilter @bind-SelectedBrands="filter.Brands"
+                               @bind-SelectedBrandsChanged="OnBrandsChanged" />
+
+                    <!-- Condition Filter -->
+                    <div class="mb-3">
+                        <MudSelect @bind-Value="filter.Condition"
+                                 Label="Condition"
+                                 Variant="Variant.Outlined"
+                                 FullWidth="true"
+                                 Clearable="true">
+                            <MudSelectItem Value="ProductCondition.New">New</MudSelectItem>
+                            <MudSelectItem Value="ProductCondition.Used">Used</MudSelectItem>
+                        </MudSelect>
+                    </div>
+
+                    <!-- Apply Filters Button -->
+                    <MudButton Variant="Variant.Filled"
+                             Color="Color.Primary"
+                             FullWidth="true"
+                             StartIcon="@Icons.Material.Filled.FilterAlt"
+                             @onclick="ApplyFilters">
+                        Apply Filters
+                    </MudButton>
+
+                    <!-- Clear Filters Button -->
+                    <MudButton Variant="Variant.Outlined"
+                             Color="Color.Secondary"
+                             FullWidth="true"
+                             Class="mt-2"
+                             StartIcon="@Icons.Material.Filled.Clear"
+                             @onclick="ClearFilters">
+                        Clear Filters
+                    </MudButton>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-0">Car Listings</h2>
+                    @if (totalCount > 0)
+                    {
+                        <small class="text-muted">@totalCount cars found</small>
+                    }
+                </div>
+
+                <!-- View Toggle -->
+                <div class="d-flex gap-2">
+                    <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
+                        <MudButton StartIcon="@Icons.Material.Filled.GridView"
+                                 @onclick="() => viewMode = ViewMode.Grid"
+                                 Color="viewMode == ViewMode.Grid ? Color.Primary : Color.Default"
+                                 Variant="viewMode == ViewMode.Grid ? Variant.Filled : Variant.Outlined">
+                            Grid
+                        </MudButton>
+                        <MudButton StartIcon="@Icons.Material.Filled.List"
+                                 @onclick="() => viewMode = ViewMode.List"
+                                 Color="viewMode == ViewMode.List ? Color.Primary : Color.Default"
+                                 Variant="viewMode == ViewMode.List ? Variant.Filled : Variant.Outlined">
+                            List
+                        </MudButton>
+                    </MudButtonGroup>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            @if (loading)
+            {
+                <div class="text-center py-5">
+                    <MudProgressCircular Size="Size.Large" Indeterminate="true" />
+                    <p class="mt-3 text-muted">Loading cars...</p>
+                </div>
+            }
+            <!-- No Results -->
+            else if (products == null || !products.Any())
+            {
+                <div class="text-center py-5">
+                    <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" Class="text-muted mb-3" />
+                    <h4 class="text-muted">No cars found</h4>
+                    <p class="text-muted mb-4">Try adjusting your filters or search terms</p>
+                    <MudButton Variant="Variant.Filled"
+                             Color="Color.Primary"
+                             StartIcon="@Icons.Material.Filled.Refresh"
+                             @onclick="ClearFilters">
+                        Clear Filters
+                    </MudButton>
+                </div>
+            }
+            <!-- Products Display -->
+            else
+            {
+                @if (viewMode == ViewMode.Grid)
+                {
+                    <div class="row">
+                        @foreach (var product in products)
+                        {
+                            <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                                <ProductCard Product="product"
+                                           OnViewDetails="() => ViewProductDetails(product.Id)"
+                                           OnAddToCart="() => AddToCart(product)"
+                                           OnAddToWishlist="() => AddToWishlist(product)" />
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="row">
+                        <div class="col-12">
+                            <MudTable Items="products"
+                                    Hover="true"
+                                    Striped="true"
+                                    Dense="true"
+                                    Breakpoint="Breakpoint.Sm">
+                                <HeaderContent>
+                                    <MudTh>Image</MudTh>
+                                    <MudTh>Name</MudTh>
+                                    <MudTh>Brand</MudTh>
+                                    <MudTh>Price</MudTh>
+                                    <MudTh>Year</MudTh>
+                                    <MudTh>Condition</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd>
+                                        @if (!string.IsNullOrEmpty(context.ImageUrl))
+                                        {
+                                            <img src="@context.ImageUrl"
+                                                 alt="@context.Name"
+                                                 style="width: 60px; height: 45px; object-fit: cover; border-radius: 4px;" />
+                                        }
+                                        else
+                                        {
+                                            <MudIcon Icon="@Icons.Material.Filled.DirectionsCar"
+                                                    Size="Size.Large"
+                                                    Class="text-muted" />
+                                        }
+                                    </MudTd>
+                                    <MudTd>
+                                        <div>
+                                            <strong>@context.Name</strong>
+                                            @if (context.Category != null)
+                                            {
+                                                <br />
+                                                <small class="text-muted">@context.Category.Name</small>
+                                            }
+                                        </div>
+                                    </MudTd>
+                                    <MudTd>@context.Brand</MudTd>
+                                    <MudTd>
+                                        <strong class="text-primary">@context.Price.ToString("N0") TND</strong>
+                                   

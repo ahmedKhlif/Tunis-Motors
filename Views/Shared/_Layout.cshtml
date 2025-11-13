@@ -137,6 +137,14 @@
                             <i class="fa fa-car me-1"></i> Browse Cars
                         </a>
                     </li>
+                    @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Seller") || User.IsInRole("Admin") || User.IsInRole("Manager")))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(Context.Request.Path.StartsWithSegments("/Product/Create") ? "active" : "")" asp-controller="Product" asp-action="Create">
+                                <i class="fa fa-plus-circle me-1"></i> Add Car
+                            </a>
+                        </li>
+                    }
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Product" asp-action="Index" asp-route-searchTerm="new">
                             <i class="fa fa-car-battery me-1"></i> New Cars
@@ -180,6 +188,8 @@
                                 <li><a class="dropdown-item" asp-controller="Admin" asp-action="CreateRole"><i class="fa fa-user-plus me-2"></i>Create Role</a></li>
                                 <li><a class="dropdown-item" asp-controller="Admin" asp-action="ListRoles"><i class="fa fa-users me-2"></i>List Roles</a></li>
                                 <li><a class="dropdown-item" asp-controller="Dashboard" asp-action="Users"><i class="fa fa-user-cog me-2"></i>Manage Users</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="Order" asp-action="Index"><i class="fa fa-shopping-bag me-2"></i>Manage Orders</a></li>
                             </ul>
                         </li>
                     }
@@ -189,6 +199,11 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Approval" asp-action="Index">
                                 <i class="fa fa-clipboard-check me-1"></i> Approvals
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Order" asp-action="Index">
+                                <i class="fa fa-shopping-bag me-1"></i> Orders
                             </a>
                         </li>
                     }

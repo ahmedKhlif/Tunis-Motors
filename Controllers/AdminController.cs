@@ -58,8 +58,8 @@ namespace TP2.Controllers
             var role = await roleManager.FindByIdAsync(id);
             if (role == null)
             {
-                ViewBag.ErrorMessage = $"Role with Id = {id} cannot be found";
-                return View("NotFound");
+                TempData["ErrorMessage"] = $"Role with Id = {id} cannot be found";
+                return RedirectToAction("ListRoles");
             }
             var model = new EditRoleViewModel
         {
@@ -88,8 +88,8 @@ namespace TP2.Controllers
             var role = await roleManager.FindByIdAsync(model.Id);
             if (role == null)
             {
-            ViewBag.ErrorMessage = $"Role with Id = {model.Id} cannot be found";
-            return View("NotFound");
+                TempData["ErrorMessage"] = $"Role with Id = {model.Id} cannot be found";
+                return RedirectToAction("ListRoles");
             }
             else
             {
@@ -114,8 +114,8 @@ namespace TP2.Controllers
             var role = await roleManager.FindByIdAsync(id);
             if (role == null)
             {
-                ViewBag.ErrorMessage = $"Role with Id = {id} cannot be found";
-                return View("NotFound");
+                TempData["ErrorMessage"] = $"Role with Id = {id} cannot be found";
+                return RedirectToAction("ListRoles");
             }
             else
             {
@@ -139,8 +139,8 @@ namespace TP2.Controllers
             var role = await roleManager.FindByIdAsync(roleId);
             if (role == null)
             {
-                ViewBag.ErrorMessage = $"Role with Id = {roleId} cannot be found";
-                return View("NotFound");
+                TempData["ErrorMessage"] = $"Role with Id = {roleId} cannot be found";
+                return RedirectToAction("ListRoles");
             }
             var model = new List<UserRoleViewModel>();
             foreach (var user in userManager.Users.ToList())
@@ -169,8 +169,8 @@ namespace TP2.Controllers
             var role = await roleManager.FindByIdAsync(roleId);
             if (role == null)
             {
-                ViewBag.ErrorMessage = $"Role with Id = {roleId} cannot be found";
-                return View("NotFound");
+                TempData["ErrorMessage"] = $"Role with Id = {roleId} cannot be found";
+                return RedirectToAction("ListRoles");
             }
             for (int i = 0; i < model.Count; i++)
             {
@@ -199,5 +199,58 @@ namespace TP2.Controllers
             return RedirectToAction("EditRole", new { Id = roleId });
         }
 
+        [HttpPost]
+        public async Task<IActionResult> LockUser(string userId)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return Json(new { success = false, message = "User not found" });
+            }
+
+            var result = await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+            if (result.Succeeded)
+            {
+                return Json(new { success = true, message = "User locked successfully" });
+            }
+
+            return Json(new { success = false, message = "Failed to lock user" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UnlockUser(string userId)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return Json(new { success = false, message = "User not found" });
+            }
+
+            var result = await userManager.SetLockoutEndDateAsync(user, null);
+            if (result.Succeeded)
+            {
+                return Json(new { success = true, message = "User unlocked successfully" });
+            }
+
+            return Json(new { success = false, message = "Failed to unlock user" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteUser(string userId)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return Json(new { success = false, message = "User not found" });
+            }
+
+            var result = await userManager.DeleteAsync(user);
+            if (result.Succeeded)
+            {
+                return Json(new { success = true, message = "User deleted successfully" });
+            }
+
+            return Json(new { success = false, message = "Failed to delete user" });
+        }
     }
 }
