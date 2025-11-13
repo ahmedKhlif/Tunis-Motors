@@ -2,9 +2,14 @@
 
 A comprehensive ASP.NET Core MVC application for buying and selling cars online in Tunisia. This platform provides a complete e-commerce solution with user management, product listings, shopping cart, wishlist functionality, and administrative controls, specifically tailored for the Tunisian automotive market.
 
-## 🎉 Latest Updates (v1.1.0)
+## 🎉 Latest Updates (v1.2.0)
 
 ### ✨ New Features
+- **Stripe Payment Integration**: Complete payment processing with Stripe for secure transactions
+- **Stock Quantity Management**: Automatic inventory tracking and stock validation
+- **Comprehensive Email System**: Professional email templates with company logo for all notifications
+- **Forgot Password & Email Confirmation**: Complete password recovery and email verification system
+- **Resend Confirmation Emails**: Users can request new confirmation emails if needed
 - **Order Status Timeline**: Users can now track complete order progress with visual timeline
 - **Admin Order Notes**: Administrators can add notes when updating order status for customer communication
 - **Category Image Support**: Categories now support optional image uploads for better visual organization
@@ -19,6 +24,8 @@ A comprehensive ASP.NET Core MVC application for buying and selling cars online 
 - **Navbar Responsiveness**: Fixed navigation display issues
 - **User-Friendly Notifications**: Enhanced notification styles for wishlist and cart actions
 - **Role-Based Functionality**: Verified and improved all role-based features
+- **Email Templates**: All emails now include company logo and professional styling
+- **Security Enhancements**: Improved authentication and authorization mechanisms
 
 ## 🚗 Features
 
@@ -45,12 +52,16 @@ A comprehensive ASP.NET Core MVC application for buying and selling cars online 
 - **Communication System** - Add notes to orders for customer communication
 
 ### Technical Features
+- **Stripe Payment Integration** - Secure payment processing with Stripe
+- **Stock Management** - Automatic inventory tracking and validation
+- **Email Notification System** - Professional emails with company logo for all user interactions
+- **Password Recovery** - Forgot password and email confirmation system
 - **Responsive Design** - Mobile-friendly interface using Bootstrap 5
 - **Real-time Updates** - AJAX-powered cart and wishlist updates
 - **Advanced Filtering** - Price range slider, category/brand filters, sorting
 - **File Upload** - Image upload for products, categories, and user profiles
 - **Order Status Tracking** - Complete order lifecycle with timeline and notes
-- **Email Notifications** - Order confirmations and system notifications
+- **Email Notifications** - Order confirmations, password reset, and system notifications
 - **Security** - CSRF protection, input validation, role-based authorization
 - **Admin Communication** - Notes system for admin-customer communication
 
@@ -61,6 +72,8 @@ A comprehensive ASP.NET Core MVC application for buying and selling cars online 
 - **Entity Framework Core** - ORM for database operations
 - **SQL Server** - Database management
 - **Identity Framework** - User authentication and authorization
+- **Stripe.net** - Payment processing
+- **MailKit/SMTP** - Email service
 - **C# 12** - Programming language
 
 ### Frontend
@@ -297,7 +310,22 @@ For support and questions:
 
 ## 🔄 Version History
 
-### v1.1.0 (Latest)
+### v1.2.0 (Latest)
+- **Stripe Payment Integration**: Complete payment processing system
+- **Stock Quantity Management**: Automatic inventory tracking and validation
+- **Professional Email System**: All emails include company logo and professional templates
+- **Password Recovery System**: Forgot password and email confirmation functionality
+- **Resend Confirmation**: Users can request new confirmation emails
+- **Order Status Timeline**: Complete order tracking with visual timeline
+- **Admin Order Notes**: Communication system between admins and customers
+- **Category Images**: Optional image uploads for categories
+- **Enhanced Order Management**: Status synchronization and audit trails
+- **Payment Method Improvements**: Better display and validation
+- **UI/UX Enhancements**: Improved notifications and responsive design
+- **Font Awesome Updates**: Compatibility with Font Awesome 4
+- **Real-time Updates**: Improved cart and wishlist functionality
+
+### v1.1.0
 - **Order Status Timeline**: Complete order tracking with visual timeline
 - **Admin Order Notes**: Communication system between admins and customers
 - **Category Images**: Optional image uploads for categories
